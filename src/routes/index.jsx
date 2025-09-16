@@ -1,0 +1,103 @@
+import React from "react";
+import { createBrowserRouter } from "react-router-dom";
+import Layout from "../components/Layout";
+import Dashboard from "../pages/Dashboard";
+import Works from "../pages/Works";
+import WorkDetail from "../pages/WorkDetail";
+import Login from "../pages/Login";
+import ForgotPassword from "../pages/ForgotPassword";
+import ResetPassword from "../pages/ResetPassword";
+import NotFound from "../pages/NotFound";
+import { ScrollToTop } from "../components/ScrollToTop";
+import { RouterProgress } from "../components/RouterProgress";
+import AuthLayout from "../components/AuthLayout";
+import GuestLayout from "../components/GuestLayout";
+import Media from "../pages/Media";
+import VideoBanner from "../pages/VideoBanner";
+
+export const router = createBrowserRouter([
+  {
+    path: "/login",
+    element: (
+      <>
+        <RouterProgress />
+        <ScrollToTop>
+          <GuestLayout>
+            <Login />
+          </GuestLayout>
+        </ScrollToTop>
+      </>
+    ),
+  },
+  {
+    path: "/forgot-password",
+    element: (
+      <>
+        <RouterProgress />
+        <ScrollToTop>
+          <GuestLayout>
+            <ForgotPassword />
+          </GuestLayout>
+        </ScrollToTop>
+      </>
+    ),
+  },
+  {
+    path: "/reset-password",
+    element: (
+      <>
+        <RouterProgress />
+        <ScrollToTop>
+          <GuestLayout>
+            <ResetPassword />
+          </GuestLayout>
+        </ScrollToTop>
+      </>
+    ),
+  },
+  {
+    path: "/",
+    element: (
+      <>
+        <RouterProgress />
+        <ScrollToTop>
+          <AuthLayout>
+            <Layout />
+          </AuthLayout>
+        </ScrollToTop>
+      </>
+    ),
+    children: [
+      {
+        index: true,
+        element: <Dashboard />,
+        loader: () => null,
+      },
+      {
+        path: "works",
+        element: <Works />,
+        loader: () => null,
+      },
+      {
+        path: "works/:workId",
+        element: <WorkDetail />,
+        loader: ({ params }) => params || null,
+      },
+      {
+        path: "media",
+        element: <Media />,
+        loader: () => null,
+      },
+      {
+        path: "video-banner",
+        element: <VideoBanner />,
+      },
+      {
+        path: "*",
+        element: <NotFound />,
+      },
+    ],
+  },
+]);
+
+export default router;

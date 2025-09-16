@@ -1,0 +1,19 @@
+.about {
+  // Your About page specific styles
+}
+
+.heroBanner{
+  position: relative;
+  &:after{
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #00000059;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+  }
+}

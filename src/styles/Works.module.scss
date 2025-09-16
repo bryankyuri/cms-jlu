@@ -1,0 +1,27 @@
+.works {
+  min-height: calc(100vh - 200px);
+  
+  .workItem {
+    display: block;
+    margin-bottom: 40px;
+    overflow: hidden;
+    text-decoration: none;
+    color: inherit;
+    
+    &:hover {
+      img {
+        transform: scale(1.05);
+      }
+    }
+    
+    img {
+      transition: transform 0.7s ease;
+    }
+  }
+}
+
+.categories-swiper {
+  :global(.swiper-slide) {
+    width: auto;
+  }
+}

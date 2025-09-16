@@ -1,0 +1,272 @@
+@use "tailwindcss/base" as *;
+@use "tailwindcss/components" as *;
+@use "tailwindcss/utilities" as *;
+
+// Global styles
+:root {
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+html {
+  // scrollbar-width: none;
+  overscroll-behavior-y: none;
+  overscroll-behavior-x: none;
+}
+
+body {
+  overscroll-behavior-y: none;
+  overscroll-behavior-x: none;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    Oxygen, Ubuntu, Cantarell, sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  color: #969696;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin: 0;
+  font-weight: normal;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+// Add any other global styles here
+
+.page-transition-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.page-transition {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.__rcs-handle-arrow {
+  display: none;
+}
+
+.__rcs-handle-button {
+  border-width: 5px !important;
+  border-color: white !important;
+  width: 76px !important;
+  height: 76px !important;
+}
+.__rcs-handle-line {
+  border-width: 3px !important;
+  border-color: white !important;
+}
+
+/* STEP 1: Wave Animation Keyframes - For PARA letters */
+@keyframes rectangleStep1 {
+  0% {
+    width: 0%;
+  }
+
+  100% {
+    width: 25px;
+  }
+}
+
+@keyframes rectangleStep2 {
+  0% {
+    width: 25px;
+  }
+
+  100% {
+    width: 5px;
+  }
+}
+
+@keyframes LWrapperStep2 {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes LContainerStep2 {
+  0% {
+    width: 27px;
+  }
+
+  100% {
+    width: 5px;
+    margin-right: 2px;
+  }
+}
+
+@keyframes rectangleStep3 {
+  0% {
+    width: 5px;
+  }
+
+  100% {
+    width: 25px;
+  }
+}
+
+@keyframes LWrapperStep3 {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes LContainerStep3 {
+  0% {
+    width: 5px;
+    margin-right: 2px;
+  }
+
+  100% {
+    width: 27px;
+    margin-right: 0px;
+  }
+}
+
+@keyframes rectangleStep4 {
+  0% {
+    width: 25px;
+    left: auto;
+    right: 2px;
+  }
+
+  100% {
+    width: 0px;
+    left: auto;
+    right: 2px;
+  }
+}
+
+/* Step 1: Wave animation for PARA letters */
+#logoParallel.step-1 .rectangle {
+  animation: rectangleStep1 0.6s ease-in;
+}
+
+#logoParallel.step-2 .rectangle {
+  animation: rectangleStep2 0.45s ease-in;
+}
+
+#logoParallel.step-2 .l-wrapper {
+  animation: LWrapperStep2 0.45s ease-in;
+}
+
+#logoParallel.step-2 .l-container {
+  animation: LContainerStep2 0.45s ease-in;
+}
+
+#logoParallel.step-3 .rectangle {
+  animation: rectangleStep3 0.45s ease-in;
+}
+
+#logoParallel.step-3 .l-wrapper {
+  animation: LWrapperStep3 0.45s ease-in;
+}
+
+#logoParallel.step-3 .l-container {
+  animation: LContainerStep3 0.45s ease-in;
+}
+
+#logoParallel.step-4 .rectangle {
+  animation: rectangleStep4 0.6s ease-in;
+}
+
+.workItem {
+  .workInfo {
+    .pre {
+      font-weight: bold;
+      transition: all 0.1s ease-in-out;
+      opacity: 0;
+    }
+    .workTitle {
+      margin-right: 0;
+      transition: all 0.3s ease-in-out;
+    }
+    .divider {
+      margin-left: 8px;
+      margin-right: 8px;
+      transition: all 0.3s ease-in-out;
+    }
+  }
+}
+
+.workItem:hover {
+  .workInfo {
+    .pre {
+      font-weight: bold;
+      transition: all 0.1s ease-in-out;
+      opacity: 1;
+    }
+    .workTitle {
+      margin-left: 12px;
+      transition: all 0.3s ease-in-out;
+    }
+    .divider {
+
+      transition: all 0.3s ease-in-out;
+    }
+  }
+}
+
+// Add to your existing styles
+.project-link-span {
+  display: inline-block;
+  overflow: hidden;
+  transition: opacity 0.3s ease, width 0.3s ease;
+}
+
+// Gallery Editor Modal Animations
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUpFromBottom {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.animate-slideUpFromBottom {
+  animation: slideUpFromBottom 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}

@@ -1,0 +1,26 @@
+.workDetail {
+  .container {
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 0 2rem;
+  }
+
+  :global {
+    .grid {
+      display: grid;
+    }
+
+    .border-t {
+      border-top-width: 1px;
+    }
+
+    .text-gray-500 {
+      color: #6b7280;
+    }
+
+    .text-sm {
+      font-size: 0.875rem;
+      line-height: 1.25rem;
+    }
+  }
+}
