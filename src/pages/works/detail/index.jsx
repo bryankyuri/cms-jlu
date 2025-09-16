@@ -1,12 +1,13 @@
 import React, { useContext, useState, useRef, useEffect } from "react";
+import ImagePopup from "../../../components/ImagePopup";
 import { useParams, Link } from "react-router-dom";
-import styles from "../styles/WorkDetail.module.scss";
-import { AppContext } from "../context/AppContext";
+import styles from "../../../styles/WorkDetail.module.scss";
+import { AppContext } from "../../../context/AppContext";
 import {
   ReactCompareSlider,
   ReactCompareSliderImage,
 } from "react-compare-slider";
-import { FadeInSection } from "../components/FadeInSection";
+import { FadeInSection } from "../../../components/FadeInSection";
 import {
   FiEdit,
   FiSave,
@@ -21,7 +22,15 @@ import {
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
-import { mediaAPI } from "../api/index";
+import { mediaAPI } from "../../../api/index";
+
+// Import modal components
+import GalleryEditorModal from "./components/GalleryEditorModal";
+import RemoveConfirmationModal from "./components/RemoveConfirmationModal";
+import CreditRemoveConfirmationModal from "./components/CreditRemoveConfirmationModal";
+import AddGalleryItemModal from "./components/AddGalleryItemModal";
+import HeroBannerEditorModal from "./components/HeroBannerEditorModal";
+import VideoProjectEditorModal from "./components/VideoProjectEditorModal";
 
 const WorkDetail = () => {
   const { workId } = useParams();
@@ -144,6 +153,8 @@ const WorkDetail = () => {
       },
     ],
   });
+  // Undo work data state if cancel edit
+  const [tempWorkData, setTempWorkData] = useState();
 
   // Animation function for smooth slider transitions
   const animateSlider = (targetPosition) => {
@@ -457,6 +468,7 @@ const WorkDetail = () => {
   const cancelEdit = () => {
     // Reload original data if needed
     // For simplicity, we're just exiting edit mode
+    setWorkData(tempWorkData); // Revert to temp data
     setEditMode(false);
   };
 
@@ -1050,988 +1062,6 @@ const WorkDetail = () => {
     }
   };
 
-  // Add this gallery editor modal component
-  const GalleryEditorModal = () => {
-    if (!isGalleryModalOpen) return null;
-
-    // Trigger animation only once when modal opens
-    useEffect(() => {
-      if (isGalleryModalOpen && !galleryModalAnimated) {
-        setGalleryModalAnimated(true);
-      }
-    }, [isGalleryModalOpen, galleryModalAnimated]);
-
-    return (
-      <div
-        className={`fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 ${
-          !galleryModalAnimated ? "animate-fadeIn" : ""
-        }`}
-      >
-        <div
-          className={`bg-white w-full h-full flex flex-col ${
-            !galleryModalAnimated ? "animate-slideUpFromBottom" : ""
-          }`}
-        >
-          <div className="p-6 border-b border-gray-200 flex justify-between items-center">
-            <h3 className="text-xl font-medium">Edit Project Gallery</h3>
-            <button
-              onClick={closeGalleryModal}
-              className="text-gray-500 hover:text-gray-700 p-2"
-            >
-              <FiX size={24} />
-            </button>
-          </div>
-
-          <div className="overflow-y-auto p-6 flex-grow">
-            <div className="flex justify-between items-center mb-6">
-              <p className="text-gray-500">
-                Drag items to reorder your project gallery.
-              </p>
-              <button
-                onClick={openAddGalleryModal}
-                className="bg-black text-white px-4 py-3 rounded-md flex items-center hover:bg-gray-800 transition-colors"
-              >
-                <FiPlusCircle className="mr-2" size={18} />
-                Add Gallery Item
-              </button>
-            </div>
-
-            <DragDropContext onDragEnd={handleDragEnd}>
-              <Droppable droppableId="gallery-items">
-                {(provided) => (
-                  <div
-                    ref={provided.innerRef}
-                    {...provided.droppableProps}
-                    className="space-y-4"
-                  >
-                    {tempImagesOrder.map((image, index) => (
-                      <Draggable
-                        key={image.id}
-                        draggableId={image.id}
-                        index={index}
-                      >
-                        {(provided, snapshot) => (
-                          <div
-                            ref={provided.innerRef}
-                            {...provided.draggableProps}
-                            className={`flex items-center bg-white border rounded-lg p-4 ${
-                              snapshot.isDragging ? "shadow-lg" : ""
-                            }`}
-                          >
-                            <div
-                              {...provided.dragHandleProps}
-                              className="mr-4 text-gray-500 cursor-move"
-                            >
-                              <FiMove size={24} />
-                            </div>
-
-                            {renderGalleryThumbnails(image)}
-
-                            <div className="ml-4 flex-grow">
-                              <div className="font-medium text-lg">
-                                {getGalleryTypeLabel(image.type)}
-                              </div>
-                            </div>
-
-                            <div className="flex items-center gap-3">
-                              <div className="text-sm bg-gray-100 px-3 py-1 rounded-full">
-                                Position {index + 1}
-                              </div>
-                              <button
-                                onClick={() => editGalleryItem(image, index)}
-                                className="text-blue-500 hover:text-blue-700 p-2 rounded-lg hover:bg-blue-50 transition-colors"
-                                title="Edit"
-                              >
-                                <FiEdit size={18} />
-                              </button>
-                              <button
-                                onClick={() => showRemoveConfirmation(index)}
-                                className="text-red-500 hover:text-red-700 p-2 rounded-lg hover:bg-red-50 transition-colors"
-                                title="Remove"
-                              >
-                                <FiTrash2 size={18} />
-                              </button>
-                            </div>
-                          </div>
-                        )}
-                      </Draggable>
-                    ))}
-                    {provided.placeholder}
-                  </div>
-                )}
-              </Droppable>
-            </DragDropContext>
-          </div>
-
-          <div className="px-8 py-5 bg-gray-50 border-t border-gray-200 flex justify-end">
-            <button
-              type="button"
-              className="px-6 py-3 text-sm font-medium text-gray-700 hover:text-gray-900 mr-3 border border-gray-300 rounded-md hover:bg-gray-100 transition-colors"
-              onClick={closeGalleryModal}
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              className="px-6 py-3 text-sm font-semibold rounded-md bg-black text-white hover:bg-gray-800 transition-colors"
-              onClick={applyGalleryChanges}
-            >
-              Apply Changes
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  // Remove Confirmation Modal Component
-  const RemoveConfirmationModal = () => {
-    if (!isRemoveConfirmOpen || removeItemIndex === null) return null;
-
-    const itemToRemove = tempImagesOrder[removeItemIndex];
-
-    return (
-      <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[70]">
-        <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 animate-fadeIn">
-          <div className="p-6">
-            <div className="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-red-100 rounded-full">
-              <FiTrash2 className="text-red-600" size={24} />
-            </div>
-
-            <h3 className="text-lg font-medium text-gray-900 text-center mb-2">
-              Remove Gallery Item
-            </h3>
-
-            <p className="text-gray-500 text-center mb-6">
-              Are you sure you want to remove this gallery item?
-            </p>
-
-            {/* Preview of item being removed */}
-            {itemToRemove && (
-              <div className="flex items-center bg-gray-50 rounded-lg p-3 mb-6">
-                {renderGalleryThumbnails(itemToRemove)}
-                <div className="ml-3 flex-grow">
-                  <div className="font-medium text-sm">
-                    {getGalleryTypeLabel(itemToRemove.type)}
-                  </div>
-                  <div className="text-xs text-gray-500">
-                    Position {removeItemIndex + 1}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            <div className="flex gap-3">
-              <button
-                type="button"
-                className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
-                onClick={cancelRemoveConfirmation}
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                className="flex-1 px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 transition-colors"
-                onClick={() => removeGalleryItem(removeItemIndex)}
-              >
-                Remove
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  // Credit Remove Confirmation Modal Component
-  const CreditRemoveConfirmationModal = () => {
-    if (!isCreditRemoveConfirmOpen || removeCreditIndex === null) return null;
-
-    const creditToRemove = workData.credits[removeCreditIndex];
-
-    return (
-      <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[70]">
-        <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 animate-fadeIn">
-          <div className="p-6">
-            <div className="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-red-100 rounded-full">
-              <FiTrash2 className="text-red-600" size={24} />
-            </div>
-
-            <h3 className="text-lg font-medium text-gray-900 text-center mb-2">
-              Remove Credit
-            </h3>
-
-            <p className="text-gray-500 text-center mb-6">
-              Are you sure you want to remove this credit?
-            </p>
-
-            {/* Preview of credit being removed */}
-            {creditToRemove && (
-              <div className="flex items-center bg-gray-50 rounded-lg p-3 mb-6">
-                <div className="ml-3 flex-grow">
-                  <div className="font-medium text-sm">
-                    {creditToRemove.role || 'Unnamed Role'}
-                  </div>
-                  <div className="text-xs text-gray-500">
-                    {creditToRemove.name.join(', ') || 'No names'}
-                  </div>
-                  <div className="text-xs text-gray-400">
-                    Position {removeCreditIndex + 1}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            <div className="flex gap-3">
-              <button
-                type="button"
-                className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
-                onClick={cancelCreditRemoveConfirmation}
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                className="flex-1 px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 transition-colors"
-                onClick={() => confirmCreditRemoval(removeCreditIndex)}
-              >
-                Remove
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  // Add Gallery Item Modal Component
-  const AddGalleryItemModal = () => {
-    if (!isAddGalleryModalOpen) return null;
-
-    const currentTypeConfig = IMAGE_TYPES.find(
-      (type) => type.value === selectedImageType
-    );
-
-    return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60]">
-        <div className="bg-white w-full h-full flex flex-col">
-          <div className="p-6 border-b border-gray-200 flex justify-between items-center">
-            <h3 className="text-xl font-medium">
-              {editingGalleryItem ? "Edit Gallery Item" : "Add Gallery Item"}
-            </h3>
-            <button
-              onClick={closeAddGalleryModal}
-              className="text-gray-500 hover:text-gray-700 p-2"
-            >
-              <FiX size={24} />
-            </button>
-          </div>
-
-          <div className="overflow-y-auto p-6 flex-grow">
-            {/* Image Type Selection */}
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Image Type
-              </label>
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-                {IMAGE_TYPES.map((type) => (
-                  <button
-                    key={type.value}
-                    onClick={() => handleImageTypeChange(type.value)}
-                    className={`p-3 rounded-lg border text-left transition-colors ${
-                      selectedImageType === type.value
-                        ? "border-black bg-black text-white"
-                        : "border-gray-300 hover:border-gray-400 bg-white"
-                    }`}
-                  >
-                    <div className="font-medium text-sm">{type.label}</div>
-                    <div className="text-xs mt-1 opacity-70">
-                      {type.imageCount} image{type.imageCount > 1 ? "s" : ""}
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Existing Images Section (only shown when editing) */}
-            {editingGalleryItem && (
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Current Images
-                </label>
-                <div className="bg-gray-50 rounded-lg p-4">
-                  {editingGalleryItem.type === "full-width" ? (
-                    // Single image display
-                    <div className="w-32 h-32 overflow-hidden rounded-lg">
-                      <img
-                        src={editingGalleryItem.imageUrl}
-                        alt="Current image"
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  ) : (
-                    // Multiple images display
-                    <div className="flex gap-3 flex-wrap">
-                      {Array.isArray(editingGalleryItem.imageUrl) 
-                        ? editingGalleryItem.imageUrl.map((url, index) => (
-                            <div key={index} className="w-24 h-24 overflow-hidden rounded-lg">
-                              <img
-                                src={url}
-                                alt={`Current image ${index + 1}`}
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
-                          ))
-                        : (
-                            <div className="w-24 h-24 overflow-hidden rounded-lg">
-                              <img
-                                src={editingGalleryItem.imageUrl}
-                                alt="Current image"
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
-                          )
-                      }
-                    </div>
-                  )}
-                  <p className="text-xs text-gray-500 mt-2">
-                    These are the current images. Select new images below to replace them.
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {/* Upload New Images Section */}
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Upload New Images
-              </label>
-              <div
-                onDragOver={handleDragOver}
-                onDrop={handleDrop}
-                className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-500 transition-colors"
-              >
-                <FiUpload className="mx-auto text-3xl text-gray-400 mb-3" />
-                <p className="text-gray-600 mb-2">Drag and drop images here, or</p>
-                <input
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  onChange={(e) => handleImageUpload(e.target.files)}
-                  className="hidden"
-                  id="gallery-upload"
-                />
-                <label
-                  htmlFor="gallery-upload"
-                  className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg cursor-pointer inline-block"
-                >
-                  Browse Images
-                </label>
-                <p className="text-xs text-gray-500 mt-2">Only image files are allowed</p>
-                
-                {isUploading && (
-                  <div className="mt-4">
-                    <div className="bg-gray-200 rounded-full h-2">
-                      <div
-                        className="bg-blue-500 h-2 rounded-full transition-all"
-                        style={{ width: `${uploadProgress}%` }}
-                      ></div>
-                    </div>
-                    <p className="text-sm text-gray-500 mt-1">Uploading...</p>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Selected Images Preview */}
-            {selectedImages.length > 0 && (
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Selected Images ({selectedImages.length}/
-                  {currentTypeConfig.imageCount})
-                </label>
-                <div className="flex gap-3 flex-wrap">
-                  {selectedImages.map((image, index) => (
-                    <div key={image.id} className="relative">
-                      <img
-                        src={mediaAPI.getDirectUrl(image.path)}
-                        alt={image.alt_text || image.original_name}
-                        className="w-20 h-20 object-cover rounded-lg border"
-                      />
-                      <button
-                        onClick={() => handleImageSelection(image)}
-                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"
-                      >
-                        ×
-                      </button>
-                      <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-70 text-white text-xs p-1 rounded-b-lg">
-                        #{index + 1}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Image Selection Grid */}
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Select Images from Gallery
-                {currentTypeConfig && (
-                  <span className="text-gray-500 text-xs ml-2">
-                    (Select {currentTypeConfig.imageCount} image
-                    {currentTypeConfig.imageCount > 1 ? "s" : ""})
-                  </span>
-                )}
-              </label>
-
-              {loadingImages ? (
-                <div className="text-center py-8">
-                  <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div>
-                  <p className="mt-2 text-gray-500">Loading images...</p>
-                </div>
-              ) : availableImages.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
-                  <FiImage size={48} className="mx-auto mb-4 opacity-50" />
-                  <p>No images found in your media gallery.</p>
-                  <p className="text-sm">
-                    Upload some images first to use them in your project
-                    gallery.
-                  </p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3 max-h-96 overflow-y-auto">
-                  {availableImages.map((image) => {
-                    const isSelected = selectedImages.find(
-                      (img) => img.id === image.id
-                    );
-                    const canSelect =
-                      selectedImages.length < currentTypeConfig.imageCount ||
-                      isSelected;
-
-                    return (
-                      <div
-                        key={image.id}
-                        className={`relative cursor-pointer rounded-lg overflow-hidden border-2 transition-all ${
-                          isSelected
-                            ? "border-black ring-2 ring-black ring-opacity-50"
-                            : canSelect
-                            ? "border-gray-200 hover:border-gray-400"
-                            : "border-gray-200 opacity-50 cursor-not-allowed"
-                        }`}
-                        onClick={() => canSelect && handleImageSelection(image)}
-                      >
-                        <img
-                          src={mediaAPI.getDirectUrl(image.path)}
-                          alt={image.alt_text || image.original_name}
-                          className="w-full h-20 object-cover"
-                        />
-                        {isSelected && (
-                          <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                            <FiCheck className="text-white" size={20} />
-                          </div>
-                        )}
-                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-1">
-                          <div className="text-white text-xs truncate">
-                            {image.original_name}
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="px-8 py-5 bg-gray-50 border-t border-gray-200 flex justify-end gap-3">
-            <button
-              type="button"
-              className="px-6 py-3 text-sm font-medium text-gray-700 hover:text-gray-900 mr-3 border border-gray-300 rounded-md hover:bg-gray-100 transition-colors"
-              onClick={closeAddGalleryModal}
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              className="px-6 py-3 text-sm font-semibold rounded-md bg-black text-white hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              onClick={editingGalleryItem ? updateGalleryItem : addGalleryItem}
-              disabled={
-                !currentTypeConfig ||
-                selectedImages.length !== currentTypeConfig.imageCount
-              }
-            >
-              {editingGalleryItem ? "Update Item" : "Add Item"}
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  // Hero Banner Image Editor Modal Component
-  const HeroBannerEditorModal = () => {
-    if (!isHeroBannerModalOpen) return null;
-
-    return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60]">
-        <div className="bg-white w-full h-full flex flex-col">
-          <div className="p-6 border-b border-gray-200 flex justify-between items-center">
-            <h3 className="text-xl font-medium">Edit Hero Banner Image</h3>
-            <button
-              onClick={closeHeroBannerModal}
-              className="text-gray-500 hover:text-gray-700 p-2"
-            >
-              <FiX size={24} />
-            </button>
-          </div>
-
-          <div className="overflow-y-auto p-6 flex-grow">
-            {/* Current Hero Banner Preview */}
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Current Hero Banner
-              </label>
-              <div className="w-full h-48 overflow-hidden rounded-lg border">
-                <img
-                  src={workData.heroBannerImage}
-                  alt="Current hero banner"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            </div>
-
-            {/* Upload New Image Section */}
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Upload New Image
-              </label>
-              <div
-                onDragOver={handleDragOver}
-                onDrop={handleDrop}
-                className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-500 transition-colors"
-              >
-                <FiUpload className="mx-auto text-3xl text-gray-400 mb-3" />
-                <p className="text-gray-600 mb-2">Drag and drop images here, or</p>
-                <input
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  onChange={(e) => handleImageUpload(e.target.files)}
-                  className="hidden"
-                  id="hero-banner-upload"
-                />
-                <label
-                  htmlFor="hero-banner-upload"
-                  className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg cursor-pointer inline-block"
-                >
-                  Browse Images
-                </label>
-                <p className="text-xs text-gray-500 mt-2">Only image files are allowed</p>
-                
-                {isUploading && (
-                  <div className="mt-4">
-                    <div className="bg-gray-200 rounded-full h-2">
-                      <div
-                        className="bg-blue-500 h-2 rounded-full transition-all"
-                        style={{ width: `${uploadProgress}%` }}
-                      ></div>
-                    </div>
-                    <p className="text-sm text-gray-500 mt-1">Uploading...</p>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Selected Image Preview */}
-            {selectedHeroBannerImage && (
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Selected Image
-                </label>
-                <div className="flex items-center bg-gray-50 rounded-lg p-3">
-                  <div className="w-20 h-20 overflow-hidden rounded-md flex-shrink-0">
-                    <img
-                      src={mediaAPI.getDirectUrl(
-                        selectedHeroBannerImage.path
-                      )}
-                      alt={
-                        selectedHeroBannerImage.alt_text ||
-                        selectedHeroBannerImage.original_name
-                      }
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div className="ml-3 flex-grow">
-                    <div className="font-medium text-sm">
-                      {selectedHeroBannerImage.original_name}
-                    </div>
-                    <div className="text-xs text-gray-500 mt-1">
-                      {selectedHeroBannerImage.alt_text && (
-                        <span>{selectedHeroBannerImage.alt_text}</span>
-                      )}
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => setSelectedHeroBannerImage(null)}
-                    className="text-red-500 hover:text-red-700 p-1"
-                  >
-                    <FiX size={16} />
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Image Selection Grid */}
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Select Hero Banner Image from Gallery
-              </label>
-
-              {loadingImages ? (
-                <div className="text-center py-8">
-                  <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div>
-                  <p className="mt-2 text-gray-500">Loading images...</p>
-                </div>
-              ) : availableImages.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
-                  <FiImage size={48} className="mx-auto mb-4 opacity-50" />
-                  <p>No images found in your media gallery.</p>
-                  <p className="text-sm">
-                    Upload some images first to use as hero banner.
-                  </p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 max-h-96 overflow-y-auto">
-                  {availableImages.map((image) => {
-                    const isSelected = selectedHeroBannerImage?.id === image.id;
-
-                    return (
-                      <div
-                        key={image.id}
-                        className={`relative cursor-pointer rounded-lg overflow-hidden border-2 transition-all ${
-                          isSelected
-                            ? "border-black ring-2 ring-black ring-opacity-50"
-                            : "border-gray-200 hover:border-gray-400"
-                        }`}
-                        onClick={() => handleHeroBannerImageSelection(image)}
-                      >
-                        <img
-                          src={mediaAPI.getDirectUrl(image.path)}
-                          alt={image.alt_text || image.original_name}
-                          className="w-full h-24 object-cover"
-                        />
-                        {isSelected && (
-                          <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                            <FiCheck className="text-white" size={20} />
-                          </div>
-                        )}
-                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-1">
-                          <div className="text-white text-xs truncate">
-                            {image.original_name}
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="px-8 py-5 bg-gray-50 border-t border-gray-200 flex justify-end gap-3">
-            <button
-              type="button"
-              className="px-6 py-3 text-sm font-medium text-gray-700 hover:text-gray-900 mr-3 border border-gray-300 rounded-md hover:bg-gray-100 transition-colors"
-              onClick={closeHeroBannerModal}
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              className="px-6 py-3 text-sm font-semibold rounded-md bg-black text-white hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              onClick={updateHeroBannerImage}
-              disabled={!selectedHeroBannerImage}
-            >
-              Update Hero Banner
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  // Video Project Editor Modal Component
-  const VideoProjectEditorModal = () => {
-    if (!isVideoProjectModalOpen) return null;
-
-    return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60]">
-        <div className="bg-white w-full h-full flex flex-col">
-          <div className="p-6 border-b border-gray-200 flex justify-between items-center">
-            <h3 className="text-xl font-medium">Select Project Video</h3>
-            <button
-              onClick={closeVideoProjectModal}
-              className="text-gray-500 hover:text-gray-700 p-2"
-            >
-              <FiX size={24} />
-            </button>
-          </div>
-
-          <div className="overflow-y-auto p-6 flex-grow">
-            {/* Current Video Preview */}
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Current Project Video
-              </label>
-              <div className="w-full h-48 overflow-hidden rounded-lg border bg-black flex items-center justify-center">
-                {workData.videoProjectSrc ? (
-                  <video
-                    src={workData.videoProjectSrc}
-                    className="w-full h-full object-cover"
-                    controls
-                    preload="metadata"
-                  />
-                ) : (
-                  <div className="text-white text-center">
-                    <FiUpload className="mx-auto mb-2" size={32} />
-                    <p>No video selected</p>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Upload New Video Section */}
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Upload New Video
-              </label>
-              <div
-                onDragOver={handleDragOver}
-                onDrop={handleVideoDrop}
-                className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-500 transition-colors"
-              >
-                <FiUpload className="mx-auto text-3xl text-gray-400 mb-3" />
-                <p className="text-gray-600 mb-2">Drag and drop videos here, or</p>
-                <input
-                  type="file"
-                  accept="video/*"
-                  multiple
-                  onChange={(e) => handleVideoUpload(e.target.files)}
-                  className="hidden"
-                  id="video-project-upload"
-                />
-                <label
-                  htmlFor="video-project-upload"
-                  className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg cursor-pointer inline-block"
-                >
-                  Browse Videos
-                </label>
-                <p className="text-xs text-gray-500 mt-2">Only video files are allowed</p>
-                
-                {isUploading && (
-                  <div className="mt-4">
-                    <div className="bg-gray-200 rounded-full h-2">
-                      <div
-                        className="bg-blue-500 h-2 rounded-full transition-all"
-                        style={{ width: `${uploadProgress}%` }}
-                      ></div>
-                    </div>
-                    <p className="text-sm text-gray-500 mt-1">Uploading...</p>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Selected Video Preview */}
-            {selectedVideoProject && (
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Selected Video
-                </label>
-                <div className="flex items-center bg-gray-50 rounded-lg p-3">
-                  <div className="w-20 h-20 overflow-hidden rounded-md flex-shrink-0 bg-black flex items-center justify-center">
-                    <video
-                      src={mediaAPI.getDirectUrl(selectedVideoProject.path)}
-                      className="w-full h-full object-cover"
-                      preload="metadata"
-                    />
-                  </div>
-                  <div className="ml-3 flex-grow">
-                    <div className="font-medium text-sm">
-                      {selectedVideoProject.original_name}
-                    </div>
-                    <div className="text-xs text-gray-500 mt-1">
-                      {selectedVideoProject.alt_text && (
-                        <span>{selectedVideoProject.alt_text}</span>
-                      )}
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => setSelectedVideoProject(null)}
-                    className="text-red-500 hover:text-red-700 p-1"
-                  >
-                    <FiX size={16} />
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Video Selection Grid */}
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Select Project Video from Gallery
-              </label>
-
-              {loadingVideos ? (
-                <div className="text-center py-8">
-                  <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div>
-                  <p className="mt-2 text-gray-500">Loading videos...</p>
-                </div>
-              ) : availableVideos.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
-                  <FiUpload size={48} className="mx-auto mb-4 opacity-50" />
-                  <p>No videos found in your media gallery.</p>
-                  <p className="text-sm">
-                    Upload some videos first to use as project video.
-                  </p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 max-h-96 overflow-y-auto">
-                  {availableVideos.map((video) => {
-                    const isSelected = selectedVideoProject?.id === video.id;
-
-                    return (
-                      <div
-                        key={video.id}
-                        className={`relative cursor-pointer rounded-lg overflow-hidden border-2 transition-all ${
-                          isSelected
-                            ? "border-black ring-2 ring-black ring-opacity-50"
-                            : "border-gray-200 hover:border-gray-400"
-                        }`}
-                        onClick={() => handleVideoProjectSelection(video)}
-                      >
-                        <div className="w-full h-24 bg-black flex items-center justify-center relative">
-                          <video
-                            src={mediaAPI.getDirectUrl(video.path)}
-                            className="w-full h-full object-cover"
-                            preload="metadata"
-                            muted
-                          />
-                          <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center">
-                            <FiUpload className="text-white" size={20} />
-                          </div>
-                        </div>
-                        {isSelected && (
-                          <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                            <FiCheck className="text-white" size={20} />
-                          </div>
-                        )}
-                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-1">
-                          <div className="text-white text-xs truncate">
-                            {video.original_name}
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="px-8 py-5 bg-gray-50 border-t border-gray-200 flex justify-end gap-3">
-            <button
-              type="button"
-              className="px-6 py-3 text-sm font-medium text-gray-700 hover:text-gray-900 mr-3 border border-gray-300 rounded-md hover:bg-gray-100 transition-colors"
-              onClick={closeVideoProjectModal}
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              className="px-6 py-3 text-sm font-semibold rounded-md bg-black text-white hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              onClick={updateVideoProject}
-              disabled={!selectedVideoProject}
-            >
-              Update Project Video
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  // ImagePopup component (same as frontsite-client)
-  const ImagePopup = () => {
-    if (!popupImage) return null;
-
-    const isArrayImage = Array.isArray(popupImage);
-    const currentImage = isArrayImage
-      ? popupImage[popupImageIndex]
-      : popupImage;
-
-    return (
-      <div
-        className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4"
-        onClick={closePopup}
-      >
-        <div className="relative max-w-full max-h-full">
-          {/* Close button */}
-          <button
-            onClick={closePopup}
-            className="absolute top-4 right-4 text-white text-2xl z-10 hover:opacity-70 transition-opacity"
-          >
-            ✕
-          </button>
-
-          {/* Navigation arrows for array images */}
-          {isArrayImage && popupImage.length > 1 && (
-            <>
-              {popupImageIndex > 0 && (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setPopupImageIndex(popupImageIndex - 1);
-                  }}
-                  className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white text-3xl hover:opacity-70 transition-opacity z-10"
-                >
-                  ‹
-                </button>
-              )}
-              {popupImageIndex < popupImage.length - 1 && (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setPopupImageIndex(popupImageIndex + 1);
-                  }}
-                  className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white text-3xl hover:opacity-70 transition-opacity z-10"
-                >
-                  ›
-                </button>
-              )}
-            </>
-          )}
-
-          {/* Image counter for array images */}
-          {isArrayImage && popupImage.length > 1 && (
-            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-white text-sm">
-              {popupImageIndex + 1} / {popupImage.length}
-            </div>
-          )}
-
-          {/* Main image */}
-          <img
-            src={currentImage}
-            alt={workData.title}
-            className="max-w-full max-h-full object-contain"
-            onClick={(e) => e.stopPropagation()}
-          />
-        </div>
-      </div>
-    );
-  };
-
   return (
     <div className={styles.workDetail}>
       <ToastContainer position="bottom-right" autoClose={3000} />
@@ -2443,7 +1473,7 @@ const WorkDetail = () => {
               </>
             ) : (
               <button
-                onClick={() => setEditMode(true)}
+                onClick={() => (setEditMode(true), setTempWorkData(workData))}
                 className="px-4 py-2 bg-gray-100 text-gray-800 hover:bg-black hover:text-white transition-colors rounded-md flex items-center"
               >
                 <FiEdit className="mr-2" />
@@ -2455,25 +1485,107 @@ const WorkDetail = () => {
       </div>
 
       {/* Add the gallery editor modal component */}
-      <GalleryEditorModal />
+      <GalleryEditorModal
+        isGalleryModalOpen={isGalleryModalOpen}
+        setIsGalleryModalOpen={setIsGalleryModalOpen}
+        galleryModalAnimated={galleryModalAnimated}
+        setGalleryModalAnimated={setGalleryModalAnimated}
+        tempImagesOrder={tempImagesOrder}
+        closeGalleryModal={closeGalleryModal}
+        openAddGalleryModal={openAddGalleryModal}
+        handleDragEnd={handleDragEnd}
+        renderGalleryThumbnails={renderGalleryThumbnails}
+        getGalleryTypeLabel={getGalleryTypeLabel}
+        editGalleryItem={editGalleryItem}
+        showRemoveConfirmation={showRemoveConfirmation}
+        applyGalleryChanges={applyGalleryChanges}
+      />
 
       {/* Add gallery item modal component */}
-      <AddGalleryItemModal />
+      <AddGalleryItemModal
+        isAddGalleryModalOpen={isAddGalleryModalOpen}
+        closeAddGalleryModal={closeAddGalleryModal}
+        editingGalleryItem={editingGalleryItem}
+        selectedImageType={selectedImageType}
+        IMAGE_TYPES={IMAGE_TYPES}
+        handleImageTypeChange={handleImageTypeChange}
+        handleDragOver={handleDragOver}
+        handleDrop={handleDrop}
+        handleImageUpload={handleImageUpload}
+        isUploading={isUploading}
+        uploadProgress={uploadProgress}
+        selectedImages={selectedImages}
+        handleImageSelection={handleImageSelection}
+        loadingImages={loadingImages}
+        availableImages={availableImages}
+        updateGalleryItem={updateGalleryItem}
+        addGalleryItem={addGalleryItem}
+      />
 
       {/* Remove confirmation modal component */}
-      <RemoveConfirmationModal />
+      <RemoveConfirmationModal
+        isRemoveConfirmOpen={isRemoveConfirmOpen}
+        removeItemIndex={removeItemIndex}
+        tempImagesOrder={tempImagesOrder}
+        renderGalleryThumbnails={renderGalleryThumbnails}
+        getGalleryTypeLabel={getGalleryTypeLabel}
+        cancelRemoveConfirmation={cancelRemoveConfirmation}
+        removeGalleryItem={removeGalleryItem}
+      />
 
       {/* Credit removal confirmation modal component */}
-      <CreditRemoveConfirmationModal />
+      <CreditRemoveConfirmationModal
+        isCreditRemoveConfirmOpen={isCreditRemoveConfirmOpen}
+        removeCreditIndex={removeCreditIndex}
+        workData={workData}
+        cancelCreditRemoveConfirmation={cancelCreditRemoveConfirmation}
+        confirmCreditRemoval={confirmCreditRemoval}
+      />
 
       {/* Hero banner editor modal component */}
-      <HeroBannerEditorModal />
+      <HeroBannerEditorModal
+        isHeroBannerModalOpen={isHeroBannerModalOpen}
+        closeHeroBannerModal={closeHeroBannerModal}
+        workData={workData}
+        selectedHeroBannerImage={selectedHeroBannerImage}
+        setSelectedHeroBannerImage={setSelectedHeroBannerImage}
+        handleDragOver={handleDragOver}
+        handleDrop={handleDrop}
+        handleImageUpload={handleImageUpload}
+        isUploading={isUploading}
+        uploadProgress={uploadProgress}
+        loadingImages={loadingImages}
+        availableImages={availableImages}
+        handleHeroBannerImageSelection={handleHeroBannerImageSelection}
+        updateHeroBannerImage={updateHeroBannerImage}
+      />
 
       {/* Video project editor modal component */}
-      <VideoProjectEditorModal />
+      <VideoProjectEditorModal
+        isVideoProjectModalOpen={isVideoProjectModalOpen}
+        closeVideoProjectModal={closeVideoProjectModal}
+        workData={workData}
+        selectedVideoProject={selectedVideoProject}
+        setSelectedVideoProject={setSelectedVideoProject}
+        handleDragOver={handleDragOver}
+        handleVideoDrop={handleVideoDrop}
+        handleVideoUpload={handleVideoUpload}
+        isUploading={isUploading}
+        uploadProgress={uploadProgress}
+        loadingVideos={loadingVideos}
+        availableVideos={availableVideos}
+        handleVideoProjectSelection={handleVideoProjectSelection}
+        updateVideoProject={updateVideoProject}
+      />
 
       {/* Image popup modal */}
-      <ImagePopup />
+      <ImagePopup
+        popupImage={popupImage}
+        popupImageIndex={popupImageIndex}
+        closePopup={closePopup}
+        setPopupImageIndex={setPopupImageIndex}
+        workData={workData}
+      />
     </div>
   );
 };
