@@ -1,11 +1,6 @@
 import React from "react";
 import { Tab } from "@headlessui/react";
-import {
-  FiGrid,
-  FiList,
-  FiUpload,
-  FiSearch,
-} from "react-icons/fi";
+import { FiGrid, FiList, FiUpload, FiSearch, FiChevronDown, FiImage, FiVideo } from "react-icons/fi";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -15,6 +10,8 @@ import UploadModal from "./components/UploadModal";
 import DeleteConfirmationModal from "./components/DeleteConfirmationModal";
 import MediaGrid from "./components/MediaGrid";
 import Pagination from "./components/Pagination";
+import ImageUploadModal from "../../components/modals/ImageUploadModal";
+import VideoUploadModal from "../../components/modals/VideoUploadModal";
 
 // Import custom hooks
 import {
@@ -53,7 +50,9 @@ const Media = () => {
     selectedFilesForUpload,
     isUploading,
     uploadProgress,
+    optimizationLevel,
     setSelectedFilesForUpload,
+    setOptimizationLevel,
     handleFileSelect,
     handleRemoveFileFromUpload,
     handleBatchUpload,
@@ -90,6 +89,50 @@ const Media = () => {
     handleDrop,
   } = useMediaUI();
 
+  // State for upload modals
+  const [isImageUploadOpen, setIsImageUploadOpen] = React.useState(false);
+  const [isVideoUploadOpen, setIsVideoUploadOpen] = React.useState(false);
+  const [isUploadDropdownOpen, setIsUploadDropdownOpen] = React.useState(false);
+
+  // Ref for dropdown to handle click outside
+  const dropdownRef = React.useRef(null);
+
+  // Handle click outside dropdown
+  React.useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsUploadDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  // Handle upload success - refresh media files
+  const handleUploadSuccess = () => {
+    loadMediaFiles();
+  };
+
+  // Handle upload modal actions
+  const openImageUpload = () => setIsImageUploadOpen(true);
+  const closeImageUpload = () => setIsImageUploadOpen(false);
+  const openVideoUpload = () => setIsVideoUploadOpen(true);
+  const closeVideoUpload = () => setIsVideoUploadOpen(false);
+
+  // Handle dropdown actions
+  const toggleUploadDropdown = () => setIsUploadDropdownOpen(!isUploadDropdownOpen);
+  const handleImageUploadClick = () => {
+    setIsUploadDropdownOpen(false);
+    openImageUpload();
+  };
+  const handleVideoUploadClick = () => {
+    setIsUploadDropdownOpen(false);
+    openVideoUpload();
+  };
+
   // Handle tab change with media type filter
   const onTabChange = (tabIndex) => {
     const mediaType = handleTabChange(tabIndex);
@@ -103,11 +146,14 @@ const Media = () => {
     const success = await deleteMediaFile(fileToDelete.id);
     if (success) {
       // Close previewer if deleted file was being previewed
-      if (isPreviewerOpen && previewMediaList[currentPreviewIndex]?.id === fileToDelete.id) {
+      if (
+        isPreviewerOpen &&
+        previewMediaList[currentPreviewIndex]?.id === fileToDelete.id
+      ) {
         setIsPreviewerOpen(false);
       }
     }
-    
+
     cancelDeleteFile();
   };
 
@@ -191,13 +237,37 @@ const Media = () => {
               >
                 <FiList size={18} />
               </button>
-              <button
-                onClick={() => setIsUploadModalOpen(true)}
-                className="bg-black text-white px-4 py-2 rounded flex items-center gap-2 ml-2"
-              >
-                <FiUpload size={18} />
-                Upload Files
-              </button>
+              <div className="flex w-[450px] justify-end gap-8">
+                <div className="relative" ref={dropdownRef}>
+                  <button 
+                    onClick={toggleUploadDropdown}
+                    className="bg-black text-white px-4 py-2 rounded flex items-center gap-2"
+                  >
+                    <FiUpload size={18} />
+                    Upload
+                    <FiChevronDown size={16} className={`transition-transform ${isUploadDropdownOpen ? 'rotate-180' : ''}`} />
+                  </button>
+                  
+                  {isUploadDropdownOpen && (
+                    <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-10">
+                      <button
+                        onClick={handleImageUploadClick}
+                        className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                      >
+                        <FiImage size={16} />
+                        Images
+                      </button>
+                      <button
+                        onClick={handleVideoUploadClick}
+                        className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100 flex items-center gap-2 border-t border-gray-100"
+                      >
+                        <FiVideo size={16} />
+                        Videos
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
           <div className="flex w-full justify-between mb-6">
@@ -236,59 +306,59 @@ const Media = () => {
             />
           </div>
 
-        <Tab.Panels>
-          <Tab.Panel>
-            {isLoading ? (
-              <div className="text-center py-12">
-                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div>
-                <p className="mt-4 text-gray-500">Loading media files...</p>
-              </div>
-            ) : (
-              <MediaGrid
-                mediaFiles={mediaFiles}
-                viewMode={viewMode}
-                handleMediaClick={onMediaClick}
-                handleDeleteFile={handleDeleteFile}
-                getFileIcon={getFileIcon}
-                formatFileSize={formatFileSize}
-              />
-            )}
-          </Tab.Panel>
-          <Tab.Panel>
-            {isLoading ? (
-              <div className="text-center py-12">
-                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div>
-                <p className="mt-4 text-gray-500">Loading images...</p>
-              </div>
-            ) : (
-              <MediaGrid
-                mediaFiles={mediaFiles}
-                viewMode={viewMode}
-                handleMediaClick={onMediaClick}
-                handleDeleteFile={handleDeleteFile}
-                getFileIcon={getFileIcon}
-                formatFileSize={formatFileSize}
-              />
-            )}
-          </Tab.Panel>
-          <Tab.Panel>
-            {isLoading ? (
-              <div className="text-center py-12">
-                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div>
-                <p className="mt-4 text-gray-500">Loading videos...</p>
-              </div>
-            ) : (
-              <MediaGrid
-                mediaFiles={mediaFiles}
-                viewMode={viewMode}
-                handleMediaClick={onMediaClick}
-                handleDeleteFile={handleDeleteFile}
-                getFileIcon={getFileIcon}
-                formatFileSize={formatFileSize}
-              />
-            )}
-          </Tab.Panel>
-        </Tab.Panels>
+          <Tab.Panels>
+            <Tab.Panel>
+              {isLoading ? (
+                <div className="text-center py-12">
+                  <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div>
+                  <p className="mt-4 text-gray-500">Loading media files...</p>
+                </div>
+              ) : (
+                <MediaGrid
+                  mediaFiles={mediaFiles}
+                  viewMode={viewMode}
+                  handleMediaClick={onMediaClick}
+                  handleDeleteFile={handleDeleteFile}
+                  getFileIcon={getFileIcon}
+                  formatFileSize={formatFileSize}
+                />
+              )}
+            </Tab.Panel>
+            <Tab.Panel>
+              {isLoading ? (
+                <div className="text-center py-12">
+                  <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div>
+                  <p className="mt-4 text-gray-500">Loading images...</p>
+                </div>
+              ) : (
+                <MediaGrid
+                  mediaFiles={mediaFiles}
+                  viewMode={viewMode}
+                  handleMediaClick={onMediaClick}
+                  handleDeleteFile={handleDeleteFile}
+                  getFileIcon={getFileIcon}
+                  formatFileSize={formatFileSize}
+                />
+              )}
+            </Tab.Panel>
+            <Tab.Panel>
+              {isLoading ? (
+                <div className="text-center py-12">
+                  <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div>
+                  <p className="mt-4 text-gray-500">Loading videos...</p>
+                </div>
+              ) : (
+                <MediaGrid
+                  mediaFiles={mediaFiles}
+                  viewMode={viewMode}
+                  handleMediaClick={onMediaClick}
+                  handleDeleteFile={handleDeleteFile}
+                  getFileIcon={getFileIcon}
+                  formatFileSize={formatFileSize}
+                />
+              )}
+            </Tab.Panel>
+          </Tab.Panels>
         </div>
       </Tab.Group>
 
@@ -310,6 +380,8 @@ const Media = () => {
         setSelectedFilesForUpload={setSelectedFilesForUpload}
         isUploading={isUploading}
         uploadProgress={uploadProgress}
+        optimizationLevel={optimizationLevel}
+        setOptimizationLevel={setOptimizationLevel}
         handleFileSelect={handleFileSelect}
         handleRemoveFileFromUpload={handleRemoveFileFromUpload}
         handleBatchUpload={handleBatchUpload}
@@ -323,6 +395,22 @@ const Media = () => {
         fileToDelete={fileToDelete}
         confirmDeleteFile={confirmDeleteFile}
         cancelDeleteFile={cancelDeleteFile}
+      />
+
+      {/* Image Upload Modal */}
+      <ImageUploadModal
+        isOpen={isImageUploadOpen}
+        onClose={closeImageUpload}
+        onUploadSuccess={handleUploadSuccess}
+        title="Upload Images"
+      />
+
+      {/* Video Upload Modal */}
+      <VideoUploadModal
+        isOpen={isVideoUploadOpen}
+        onClose={closeVideoUpload}
+        onUploadSuccess={handleUploadSuccess}
+        title="Upload Video"
       />
 
       <ToastContainer

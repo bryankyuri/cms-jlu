@@ -4,6 +4,7 @@ import Layout from "../components/Layout";
 import Dashboard from "../pages/Dashboard";
 import Works from "../pages/Works";
 import WorkDetail from "../pages/works/detail/index";
+import WorkCreate from "../pages/works/create/index";
 import Login from "../pages/Login";
 import ForgotPassword from "../pages/ForgotPassword";
 import ResetPassword from "../pages/ResetPassword";
@@ -12,7 +13,7 @@ import { ScrollToTop } from "../components/ScrollToTop";
 import { RouterProgress } from "../components/RouterProgress";
 import AuthLayout from "../components/AuthLayout";
 import GuestLayout from "../components/GuestLayout";
-import Media from "../pages/Media";
+import Media from "../pages/Media/index";
 import VideoBanner from "../pages/VideoBanner";
 
 export const router = createBrowserRouter([
@@ -76,6 +77,11 @@ export const router = createBrowserRouter([
       {
         path: "works",
         element: <Works />,
+        loader: () => null,
+      },
+       {
+        path: "works/create",
+        element: <WorkCreate />,
         loader: () => null,
       },
       {

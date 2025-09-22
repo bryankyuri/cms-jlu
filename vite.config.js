@@ -10,7 +10,7 @@ export default defineConfig({
     port: 3000,
     host: '0.0.0.0', // Allow connections from any IP
     strictPort: true, // Don't try another port if 3000 is in use
-    hmr: false,
+    hmr: true,
     cors: true, // Enable CORS
     allowedHosts: ['https://parallelstudio.asia', 'localhost'], // Add this line
   },

@@ -197,7 +197,7 @@ const Works = () => {
 
         {/* Add Work Button */}
         <Link
-          to="/works/add"
+          to="/works/create"
           className="w-full sm:w-auto bg-[#F0F0F0] text-[#787878] px-6 py-2 rounded text-sm hover:bg-black hover:text-white transition-colors flex items-center justify-center font-semibold"
         >
           <FiPlus className="mr-2" />

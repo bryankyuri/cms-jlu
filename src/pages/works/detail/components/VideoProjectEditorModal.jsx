@@ -110,11 +110,21 @@ const VideoProjectEditorModal = ({
               </label>
               <div className="flex items-center bg-gray-50 rounded-lg p-3">
                 <div className="w-20 h-20 overflow-hidden rounded-md flex-shrink-0 bg-black flex items-center justify-center">
-                  <video
-                    src={mediaAPI.getDirectUrl(selectedVideoProject.path)}
-                    className="w-full h-full object-cover"
-                    preload="metadata"
-                  />
+                  {selectedVideoProject.poster_url ? (
+                    // Display poster image if available
+                    <img
+                      src={selectedVideoProject.poster_url}
+                      alt={selectedVideoProject.original_name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    // Fall back to video preview
+                    <video
+                      src={mediaAPI.getDirectUrl(selectedVideoProject.path)}
+                      className="w-full h-full object-cover"
+                      preload="metadata"
+                    />
+                  )}
                 </div>
                 <div className="ml-3 flex-grow">
                   <div className="font-medium text-sm">
@@ -171,12 +181,22 @@ const VideoProjectEditorModal = ({
                       onClick={() => handleVideoProjectSelection(video)}
                     >
                       <div className="w-full h-24 bg-black flex items-center justify-center relative">
-                        <video
-                          src={mediaAPI.getDirectUrl(video.path)}
-                          className="w-full h-full object-cover"
-                          preload="metadata"
-                          muted
-                        />
+                        {video.poster_url ? (
+                          // Display poster image if available
+                          <img
+                            src={video.poster_url}
+                            alt={video.original_name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          // Fall back to video preview
+                          <video
+                            src={mediaAPI.getDirectUrl(video.path)}
+                            className="w-full h-full object-cover"
+                            preload="metadata"
+                            muted
+                          />
+                        )}
                         <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center">
                           <FiUpload className="text-white" size={20} />
                         </div>

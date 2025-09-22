@@ -3,6 +3,29 @@ const API_BASE_URL = process.env.NODE_ENV === 'production'
   ? 'https://staging-api.parallelstudio.asia/api'
   : 'http://127.0.0.1:8000/api';
 
+// Storage base URL for media files
+const STORAGE_BASE_URL = process.env.NODE_ENV === 'production' 
+  ? 'https://staging-api.parallelstudio.asia/storage'
+  : 'http://127.0.0.1:8000/storage';
+
+// Convert API returned URLs to use correct base URL
+const convertApiUrl = (url) => {
+  if (!url) return null;
+  
+  // If it's already using the correct base URL, return as is
+  if (url.includes(STORAGE_BASE_URL)) {
+    return url;
+  }
+  
+  // Extract the path after '/storage/'
+  const storagePathMatch = url.match(/\/storage\/(.+)$/);
+  if (storagePathMatch) {
+    return `${STORAGE_BASE_URL}/${storagePathMatch[1]}`;
+  }
+  
+  return url;
+};
+
 // Get auth token from localStorage
 const getAuthToken = () => {
   return localStorage.getItem('cms_auth_token');
@@ -151,7 +174,7 @@ export const mediaAPI = {
     return await apiRequest(url);
   },
 
-  // Upload new media file
+  // Upload new media file (general - routes to specific methods)
   upload: async (file, metadata = {}) => {
     const formData = new FormData();
     formData.append('file', file);
@@ -173,11 +196,82 @@ export const mediaAPI = {
     });
   },
 
+  // Upload multiple images
+  uploadImages: async (files, metadata = {}) => {
+    const results = [];
+    
+    for (const file of files) {
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      if (metadata.alt_text) {
+        formData.append('alt_text', metadata.alt_text || file.name);
+      }
+      if (metadata.description) {
+        formData.append('description', metadata.description || `Uploaded ${new Date().toLocaleDateString()}`);
+      }
+
+      try {
+        const result = await apiRequest('/media/upload-image', {
+          method: 'POST',
+          body: formData,
+          headers: {
+            'Authorization': `Bearer ${getAuthToken()}`,
+          }
+        });
+        results.push({ success: true, data: result, file: file.name });
+      } catch (error) {
+        results.push({ success: false, error: error.message, file: file.name });
+      }
+    }
+    
+    return results;
+  },
+
+  // Upload single video with optional poster
+  uploadVideo: async (videoFile, posterFile = null, metadata = {}) => {
+    const formData = new FormData();
+    formData.append('file', videoFile);
+    
+    if (posterFile) {
+      formData.append('poster', posterFile);
+    }
+    
+    if (metadata.alt_text) {
+      formData.append('alt_text', metadata.alt_text);
+    }
+    if (metadata.description) {
+      formData.append('description', metadata.description);
+    }
+
+    return await apiRequest('/media/upload-video', {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'Authorization': `Bearer ${getAuthToken()}`,
+      }
+    });
+  },
+
   // Update media metadata
   update: async (id, data) => {
     return await apiRequest(`/media/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data),
+    });
+  },
+
+  // Update video poster
+  updateVideoPoster: async (mediaId, posterFile) => {
+    const formData = new FormData();
+    formData.append('poster', posterFile);
+
+    return await apiRequest(`/media/${mediaId}/update-poster`, {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'Authorization': `Bearer ${getAuthToken()}`,
+      }
     });
   },
 

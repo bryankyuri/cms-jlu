@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import { mediaAPI } from "../../../api";
+import { optimizeImage, getCompressionStats } from "../../../utils/imageOptimizer";
+import { generateVideoThumbnail } from "../../../utils/videoThumbnailGenerator";
 
 /**
  * Custom hook for managing file upload functionality
@@ -9,29 +11,86 @@ export const useFileUpload = (onUploadSuccess) => {
   const [selectedFilesForUpload, setSelectedFilesForUpload] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [optimizationLevel, setOptimizationLevel] = useState('high');
 
   // Handle file selection for upload preview
-  const handleFileSelect = (files) => {
+  const handleFileSelect = async (files) => {
     const fileArray = Array.from(files);
-    
-    // Filter to only allow images and videos
-    const allowedFiles = fileArray.filter((file) => {
+    const newFilePreviews = [];
+
+    for (const file of fileArray) {
       const isImage = file.type.startsWith("image/");
       const isVideo = file.type.startsWith("video/");
-      return isImage || isVideo;
-    });
 
-    // Create preview objects for allowed files
-    const newPreviews = allowedFiles.map((file, index) => ({
-      id: Date.now() + index,
-      file,
-      name: file.name,
-      type: file.type,
-      size: file.size,
-      previewUrl: URL.createObjectURL(file)
-    }));
+      if (!isImage && !isVideo) {
+        toast.error(
+          `${file.name} is not supported. Only images and videos are allowed.`
+        );
+        continue;
+      }
 
-    setSelectedFilesForUpload(newPreviews);
+      let previewUrl;
+      let thumbnailUrl;
+      let processedFile = file;
+      let compressionStats = null;
+
+      if (isImage) {
+        try {
+          // Optimize image before upload
+          const optimizationResult = await optimizeImage(file, optimizationLevel);
+          processedFile = optimizationResult.file;
+          compressionStats = getCompressionStats(file, optimizationResult.file);
+          
+          previewUrl = URL.createObjectURL(processedFile);
+          thumbnailUrl = previewUrl;
+          
+          // Show compression info
+          const savingPercentage = ((file.size - processedFile.size) / file.size * 100).toFixed(1);
+          if (savingPercentage > 5) { // Only show if meaningful compression
+            toast.success(
+              `${file.name} optimized: ${savingPercentage}% smaller (${(processedFile.size / 1024 / 1024).toFixed(1)}MB)`
+            );
+          }
+        } catch (error) {
+          console.error("Failed to optimize image:", error);
+          previewUrl = URL.createObjectURL(file);
+          thumbnailUrl = previewUrl;
+        }
+      } else if (isVideo) {
+        try {
+          const videoThumbnail = await generateVideoThumbnail(file);
+          
+          // Optimize the video thumbnail
+          if (videoThumbnail instanceof File) {
+            const optimizedThumbnail = await optimizeImage(videoThumbnail, optimizationLevel);
+            thumbnailUrl = URL.createObjectURL(optimizedThumbnail.file);
+          } else {
+            thumbnailUrl = videoThumbnail;
+          }
+          
+          previewUrl = thumbnailUrl;
+        } catch (error) {
+          console.error("Failed to generate video thumbnail:", error);
+          previewUrl = null;
+          thumbnailUrl = null;
+        }
+      }
+
+      newFilePreviews.push({
+        file: processedFile,
+        originalFile: file,
+        previewUrl,
+        thumbnailUrl,
+        type: isImage ? "image" : "video",
+        name: processedFile.name || file.name,
+        size: processedFile.size,
+        originalSize: file.size,
+        compressionStats,
+        id: Date.now() + Math.random(), // Unique ID for each file
+      });
+    }
+
+    setSelectedFilesForUpload((prev) => [...prev, ...newFilePreviews]);
   };
 
   // Remove file from upload selection
@@ -137,7 +196,28 @@ export const useFileUpload = (onUploadSuccess) => {
     }
 
     for (const file of allowedFiles) {
-      await uploadSingleFile(file);
+      let processedFile = file;
+
+      // Optimize images before upload
+      if (file.type.startsWith("image/")) {
+        try {
+          const optimizationResult = await optimizeImage(file, optimizationLevel);
+          processedFile = optimizationResult.file;
+          
+          // Show compression info
+          const savingPercentage = ((file.size - processedFile.size) / file.size * 100).toFixed(1);
+          if (savingPercentage > 5) { // Only show if meaningful compression
+            toast.success(
+              `${file.name} optimized: ${savingPercentage}% smaller`
+            );
+          }
+        } catch (error) {
+          console.error("Failed to optimize image:", error);
+          // Continue with original file if optimization fails
+        }
+      }
+
+      await uploadSingleFile(processedFile);
     }
     setUploadProgress(0);
   };
@@ -157,9 +237,11 @@ export const useFileUpload = (onUploadSuccess) => {
     selectedFilesForUpload,
     isUploading,
     uploadProgress,
+    optimizationLevel,
     
     // Setters
     setSelectedFilesForUpload,
+    setOptimizationLevel,
     
     // Actions
     handleFileSelect,
