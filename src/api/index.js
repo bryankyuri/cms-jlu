@@ -294,6 +294,86 @@ export const mediaAPI = {
   }
 };
 
+// Works API functions
+export const worksAPI = {
+  // Get all works with filtering (now always uses POST /works/list)
+  getAll: async (params = {}) => {
+    // Always use POST request to /works/list for all filtering
+    return await apiRequest('/works/list', {
+      method: 'POST',
+      body: JSON.stringify(params),
+    });
+  },
+
+  // Get single work by ID
+  get: async (id) => {
+    return await apiRequest(`/works/${id}`);
+  },
+
+  // Create new work
+  create: async (workData) => {
+    return await apiRequest('/works', {
+      method: 'POST',
+      body: JSON.stringify(workData),
+    });
+  },
+
+  // Update existing work
+  update: async (id, workData) => {
+    return await apiRequest(`/works/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(workData),
+    });
+  },
+
+  // Delete work
+  delete: async (id) => {
+    return await apiRequest(`/works/${id}`, {
+      method: 'DELETE',
+    });
+  },
+
+  // Publish work
+  publish: async (id) => {
+    return await apiRequest(`/works/${id}/publish`, {
+      method: 'PATCH',
+    });
+  },
+
+  // Unpublish work
+  unpublish: async (id) => {
+    return await apiRequest(`/works/${id}/unpublish`, {
+      method: 'PATCH',
+    });
+  },
+
+  // Save as draft
+  saveDraft: async (id, workData) => {
+    return await apiRequest(`/works/${id}/draft`, {
+      method: 'PATCH',
+      body: JSON.stringify(workData),
+    });
+  },
+
+  // Create work as draft
+  createDraft: async (workData) => {
+    const draftData = { ...workData, status: 'draft' };
+    return await apiRequest('/works', {
+      method: 'POST',
+      body: JSON.stringify(draftData),
+    });
+  },
+
+  // Create and publish work
+  createAndPublish: async (workData) => {
+    const publishData = { ...workData, status: 'published' };
+    return await apiRequest('/works', {
+      method: 'POST',
+      body: JSON.stringify(publishData),
+    });
+  }
+};
+
 // Legacy functions for backward compatibility
 export const fetchData = async (endpoint) => {
   return await apiRequest(endpoint);

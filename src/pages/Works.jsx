@@ -1,154 +1,124 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { FiPlus, FiSearch, FiEye, FiX } from "react-icons/fi";
 import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import { AppContext } from "../context/AppContext"; // Make sure this import exists
+import { FiSearch, FiX, FiFilter, FiPlus, FiEye, FiEdit } from "react-icons/fi";
+import {worksAPI} from "../api";
+import MultiSelect from "../components/MultiSelect";
 
 const Works = () => {
-  const navigate = useNavigate();
+  // State management
+  const [works, setWorks] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [sortBy, setSortBy] = useState("name");
-  const [sortDirection, setSortDirection] = useState("asc");
-  const { deviceType } = useContext(AppContext);
+  const [statusFilter, setStatusFilter] = useState([]);
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [tagsFilter, setTagsFilter] = useState([]);
+  const [sortBy, setSortBy] = useState("created_at");
+  const [sortDirection, setSortDirection] = useState("desc");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalWorks, setTotalWorks] = useState(0);
 
-  // Sample works data
-  const [works, setWorks] = useState([
-    {
-      id: 1,
-      name: "PILLOW WALK",
-      client: "ALDO",
-      projectYear: "2023",
-      thumbnail: "/assets/works/work1.jpg",
-      categories: ["COLOR GRADING", "MOTION GRAPHIC"],
-      status: "published",
-      dateModified: "2023-05-15",
-    },
-    {
-      id: 2,
-      name: "RAMADAN 2024",
-      client: "TOKOPEDIA",
-      projectYear: "2024",
-      thumbnail: "/assets/works/work2.jpg",
-      categories: ["MOTION GRAPHIC"],
-      status: "published",
-      dateModified: "2024-01-12",
-    },
-    {
-      id: 3,
-      name: "TRUST IN GOLD",
-      client: "UBS GOLD",
-      projectYear: "2023",
-      thumbnail: "/assets/works/work3.jpg",
-      categories: ["COLOR GRADING", "CGI"],
-      status: "draft",
-      dateModified: "2023-07-22",
-    },
-    {
-      id: 4,
-      name: "SPEAK TO ME",
-      client: "SOCIOLLA",
-      projectYear: "2023",
-      thumbnail: "/assets/works/work4.jpg",
-      categories: ["MOTION GRAPHIC", "CGI"],
-      status: "published",
-      dateModified: "2023-09-05",
-    },
-    {
-      id: 5,
-      name: "AUTUMN COLLECTION",
-      client: "UNIQLO",
-      projectYear: "2024",
-      thumbnail: "/assets/works/work5.jpg",
-      categories: ["COLOR GRADING"],
-      status: "unpublished",
-      dateModified: "2024-02-28",
-    },
-    {
-      id: 6,
-      name: "NEXT LEVEL CAMPAIGN",
-      client: "ADIDAS",
-      projectYear: "2023",
-      thumbnail: "/assets/works/work6.jpg",
-      categories: ["MOTION GRAPHIC", "CGI"],
-      status: "published",
-      dateModified: "2023-11-14",
-    },
-  ]);
+  const navigate = useNavigate();
 
-  // Function to handle search and sort
-  const getFilteredWorks = () => {
-    return [...works]
-      .filter((work) =>
-        work.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        work.client.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-      .sort((a, b) => {
-        let valueA, valueB;
+  // Fetch works from API
+  const fetchWorks = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const params = {
+        page: currentPage,
+        per_page: 12
+      };
 
-        if (sortBy === "name") {
-          valueA = a.name.toLowerCase();
-          valueB = b.name.toLowerCase();
-        } else if (sortBy === "client") {
-          valueA = a.client.toLowerCase();
-          valueB = b.client.toLowerCase();
-        } else if (sortBy === "dateModified") {
-          valueA = new Date(a.dateModified);
-          valueB = new Date(b.dateModified);
-        }
+      // Only add parameters if they have actual values
+      if (searchQuery && searchQuery.trim()) {
+        params.search = searchQuery.trim();
+      }
+      
+      if (statusFilter.length > 0) {
+        params.status = statusFilter;
+      }
+      
+      if (categoryFilter !== 'all') {
+        params.category = categoryFilter;
+      }
 
-        if (sortDirection === "asc") {
-          return valueA > valueB ? 1 : -1;
-        } else {
-          return valueA < valueB ? 1 : -1;
-        }
-      });
-  };
+      if (tagsFilter.length > 0) {
+        params.tags = tagsFilter;
+      }
+      
+      params.sort_by = sortBy;
+      params.sort_direction = sortDirection;
 
-  // Handlers
-  const handleSortChange = (e) => {
-    setSortBy(e.target.value);
-  };
-
-  const handleSortDirectionToggle = () => {
-    setSortDirection(sortDirection === "asc" ? "desc" : "asc");
-  };
-
-  const handleViewDetail = (workId) => {
-    navigate(`/works/${workId}`);
-  };
-
-  const handleStatusChange = (workId, newStatus) => {
-    setWorks(
-      works.map((work) => {
-        if (work.id === workId) {
-          return {
-            ...work,
-            status: newStatus,
-            dateModified: new Date().toISOString().split("T")[0],
-          };
-        }
-        return work;
-      })
-    );
-
-    toast.success(`Work status changed to ${newStatus}`);
-  };
-
-  const getStatusBadgeClass = (status) => {
-    switch (status) {
-      case "published":
-        return "bg-green-100 text-green-800";
-      case "draft":
-        return "bg-yellow-100 text-yellow-800";
-      case "unpublished":
-        return "bg-gray-100 text-gray-800";
-      default:
-        return "bg-gray-100 text-gray-800";
+      const response = await worksAPI.getAll(params);
+      
+      setWorks(response.data || []);
+      setTotalPages(response.meta?.last_page || 1);
+      setTotalWorks(response.meta?.total || 0);
+      setCurrentPage(response.meta?.current_page || 1);
+    } catch (err) {
+      console.error('Error fetching works:', err);
+      setError(err.response?.data?.message || 'Failed to fetch works');
+      setWorks([]);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const categories = ["ALL PROJECT", "COLOR GRADING", "MOTION GRAPHIC", "CGI"];
+  // Effects
+  useEffect(() => {
+    fetchWorks();
+  }, [currentPage, searchQuery, statusFilter, categoryFilter, tagsFilter, sortBy, sortDirection]);
+
+  // Computed values
+  const filteredAndSortedWorks = works;
+
+  // Helper functions
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
+  // Event handlers
+  const clearFilters = () => {
+    setSearchQuery("");
+    setStatusFilter([]);
+    setCategoryFilter("all");
+    setTagsFilter([]);
+    setCurrentPage(1);
+  };
+
+  const handleToggleStatus = async (work) => {
+    try {
+      const newStatus = work.status === 'published' ? 'draft' : 'published';
+      
+      if (newStatus === 'published') {
+        await worksAPI.publish(work.id);
+      } else {
+        await worksAPI.unpublish(work.id);
+      }
+      
+      // Update local state
+      setWorks(prevWorks => 
+        prevWorks.map(w => 
+          w.id === work.id 
+            ? { ...w, status: newStatus }
+            : w
+        )
+      );
+      
+      toast.success(`Work ${newStatus === 'published' ? 'published' : 'unpublished'} successfully!`);
+    } catch (error) {
+      console.error('Error toggling work status:', error);
+      toast.error('Failed to update work status');
+    }
+  };
 
   return (
     <div className="w-full px-4 py-8">
@@ -158,8 +128,9 @@ const Works = () => {
         WORKS
       </h1>
 
-      <div className="flex flex-col sm:flex-row justify-between items-start mb-10 gap-4">
-        <div className="flex flex-col sm:flex-row w-full sm:w-auto gap-4">
+      {/* Controls */}
+      <div className="flex flex-col lg:flex-row justify-between items-start mb-10 gap-4">
+        <div className="flex flex-col sm:flex-row w-full lg:w-auto gap-4">
           {/* Search input */}
           <div className="relative flex w-full sm:w-auto min-w-[300px]">
             <span className="absolute inset-y-0 left-0 flex items-center pl-2">
@@ -167,196 +138,317 @@ const Works = () => {
             </span>
             <input
               type="text"
-              placeholder="Search by work name or client..."
+              placeholder="Search by title, client, or description..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10 pr-4 py-2 w-full border-b border-gray-300 focus:outline-none focus:border-black"
             />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery("")}
+                className="absolute inset-y-0 right-0 flex items-center pr-2"
+              >
+                <FiX className="text-gray-400 hover:text-gray-600" />
+              </button>
+            )}
           </div>
 
-          {/* Sort options */}
-          <div className="flex items-center gap-2">
+          {/* Filters */}
+          <div className="flex items-center gap-2 flex-wrap">
+            <FiFilter className="text-gray-500" />
+            
+            {/* Status Filter - Multiple Selection */}
+            <MultiSelect
+              options={[
+                { value: 'published', label: 'Published' },
+                { value: 'unpublished', label: 'Unpublished' },
+                { value: 'draft', label: 'Draft' }
+              ]}
+              value={statusFilter}
+              onChange={setStatusFilter}
+              placeholder="Select Status..."
+              className="min-w-[160px]"
+            />
+
+            {/* Category Filter */}
+            <select
+              value={categoryFilter}
+              onChange={(e) => setCategoryFilter(e.target.value)}
+              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-black"
+            >
+              <option value="all">All Categories</option>
+              <option value="film/series">Film/Series</option>
+              <option value="commercial">Commercial</option>
+            </select>
+
+            {/* Tags Filter - Multiple Selection */}
+            <MultiSelect
+              options={[
+                { value: 'MOTION GRAPHIC', label: 'Motion Graphic' },
+                { value: 'COLOR GRADING', label: 'Color Grading' },
+                { value: 'VFX', label: 'VFX' },
+                { value: 'CGI', label: 'CGI' }
+              ]}
+              value={tagsFilter}
+              onChange={setTagsFilter}
+              placeholder="Select Tags..."
+              className="min-w-[140px]"
+            />
+
+            {/* Sort options */}
             <select
               value={sortBy}
-              onChange={handleSortChange}
-              className="w-full sm:w-auto min-w-[150px] border-b border-gray-300 px-2 py-2 focus:outline-none focus:border-black"
+              onChange={(e) => setSortBy(e.target.value)}
+              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-black"
             >
-              <option value="name">Sort by Name</option>
-              <option value="client">Sort by Client</option>
-              <option value="dateModified">Sort by Modified Date</option>
+              <option value="created_at">Date Created</option>
+              <option value="updated_at">Last Modified</option>
+              <option value="title">Title</option>
+              <option value="client">Client</option>
+              <option value="status">Status</option>
             </select>
 
             <button
-              onClick={handleSortDirectionToggle}
-              className="px-2 py-2 border border-gray-300 rounded-md h-full w-[40px] text-center"
+              onClick={() => setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')}
+              className="px-3 py-2 border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none"
             >
-              {sortDirection === "asc" ? "↑" : "↓"}
+              {sortDirection === 'asc' ? '↑' : '↓'}
             </button>
+
+            {/* Clear filters */}
+            {(searchQuery || statusFilter.length > 0 || categoryFilter !== 'all' || tagsFilter.length > 0) && (
+              <button
+                onClick={clearFilters}
+                className="px-3 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200"
+              >
+                Clear Filters
+              </button>
+            )}
           </div>
         </div>
 
-        {/* Add Work Button */}
+        {/* Create Work Button */}
         <Link
           to="/works/create"
-          className="w-full sm:w-auto bg-[#F0F0F0] text-[#787878] px-6 py-2 rounded text-sm hover:bg-black hover:text-white transition-colors flex items-center justify-center font-semibold"
+          className="flex items-center gap-2 bg-black text-white px-4 py-2 rounded-md hover:bg-gray-800 transition-colors whitespace-nowrap"
         >
-          <FiPlus className="mr-2" />
-          ADD WORK
+          <FiPlus size={20} />
+          Create Work
         </Link>
       </div>
 
-      {/* Works List */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16"
-                >
-                  Preview
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Work
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Client
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Year
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Categories
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Status
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {getFilteredWorks().length > 0 ? (
-                getFilteredWorks().map((work) => (
-                  <tr key={work.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="w-12 h-12 overflow-hidden rounded">
-                        <img
-                          src={work.thumbnail}
-                          alt={`${work.name} thumbnail`}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-black">
-                        {work.name}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{work.client}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-500">
-                        {work.projectYear}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex flex-wrap gap-1">
-                        {work.categories.map((category, idx) => (
-                          <span
-                            key={idx}
-                            className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800"
-                          >
-                            {category}
-                          </span>
-                        ))}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadgeClass(
-                          work.status
-                        )}`}
-                      >
-                        {work.status.charAt(0).toUpperCase() + work.status.slice(1)}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <div className="flex items-center justify-start space-x-3">
-                        <button
-                          onClick={() => handleViewDetail(work.id)}
-                          className="flex items-center px-3 py-1 rounded-md bg-gray-100 text-gray-700 hover:bg-black hover:text-white transition-colors"
-                        >
-                          <FiEye size={16} className="mr-1" />
-                          <span>View</span>
-                        </button>
-
-                        {work.status === "published" ? (
-                          <button
-                            onClick={() => handleStatusChange(work.id, "unpublished")}
-                            className="flex items-center px-3 py-1 rounded-md bg-red-50 text-red-600 hover:bg-red-100 transition-colors"
-                          >
-                            <FiX size={16} className="mr-1" />
-                            <span>Unpublish</span>
-                          </button>
-                        ) : work.status === "unpublished" || work.status === "draft" ? (
-                          <button
-                            onClick={() => handleStatusChange(work.id, "published")}
-                            className="flex items-center px-3 py-1 rounded-md bg-green-50 text-green-600 hover:bg-green-100 transition-colors"
-                          >
-                            <svg
-                              className="w-4 h-4 mr-1"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                              xmlns="http://www.w3.org/2000/svg"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M5 13l4 4L19 7"
-                              />
-                            </svg>
-                            <span>Publish</span>
-                          </button>
-                        ) : null}
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="7" className="px-6 py-12 text-center text-gray-500">
-                    No works found matching your search.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+      {/* Loading State */}
+      {loading && (
+        <div className="text-center py-8">
+          <div className="animate-spin rounded-full h-12 w-12 border-2 border-gray-300 border-t-black mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading works...</p>
         </div>
-      </div>
+      )}
+
+      {/* Error State */}
+      {error && !loading && (
+        <div className="text-center py-8">
+          <p className="text-red-600 mb-4">Error: {error}</p>
+          <button
+            onClick={fetchWorks}
+            className="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800"
+          >
+            Try Again
+          </button>
+        </div>
+      )}
+
+      {/* Works List */}
+      {!loading && !error && (
+        <>
+          {/* Results Info */}
+          <div className="mb-6 text-sm text-gray-600">
+            Showing {filteredAndSortedWorks.length} of {totalWorks} works
+            {searchQuery && ` for "${searchQuery}"`}
+            {statusFilter.length > 0 && ` (Status: ${statusFilter.join(', ')})`}
+            {categoryFilter !== 'all' && ` (Category: ${categoryFilter})`}
+            {tagsFilter.length > 0 && ` (Tags: ${tagsFilter.join(', ')})`}
+          </div>
+
+          {/* Works Table */}
+          {filteredAndSortedWorks.length > 0 ? (
+            <div className="bg-white rounded-lg shadow overflow-hidden mb-8">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Work
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Client
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Category
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Year
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Tags
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Status
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Created
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {filteredAndSortedWorks.map((work) => (
+                      <tr key={work.id} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center">
+                            <div className="flex-shrink-0 h-12 w-16">
+                              {work.hero_banner_image ? (
+                                <img
+                                  className="h-12 w-16 object-cover rounded"
+                                  src={work.hero_banner_image}
+                                  alt={work.title}
+                                  onError={(e) => {
+                                    e.target.style.display = 'none';
+                                    e.target.nextSibling.style.display = 'flex';
+                                  }}
+                                />
+                              ) : null}
+                              <div className="h-12 w-16 bg-gray-200 rounded flex items-center justify-center">
+                                <FiEye className="text-gray-400" size={20} />
+                              </div>
+                            </div>
+                            <div className="ml-4">
+                              <div className="text-sm font-medium text-gray-900 max-w-xs truncate">
+                                {work.title}
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {work.client}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {work.category || '-'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {work.year || '-'}
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex flex-wrap gap-1 max-w-xs">
+                            {work.tags && work.tags.length > 0 ? (
+                              work.tags.slice(0, 3).map((tag, index) => (
+                                <span
+                                  key={index}
+                                  className="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-800"
+                                >
+                                  {tag}
+                                </span>
+                              ))
+                            ) : (
+                              <span className="text-gray-400 text-sm">No tags</span>
+                            )}
+                            {work.tags && work.tags.length > 3 && (
+                              <span className="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-600">
+                                +{work.tags.length - 3}
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                            work.status === 'published' 
+                              ? 'bg-green-100 text-green-800'
+                              : work.status === 'unpublished'
+                              ? 'bg-red-100 text-red-800'
+                              : 'bg-yellow-100 text-yellow-800'
+                          }`}>
+                            {work.status}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {formatDate(work.created_at)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                          <div className="flex items-center gap-2">
+                            <Link
+                              to={`/works/${work.id}/edit`}
+                              className="text-blue-600 hover:text-blue-900 flex items-center gap-1"
+                            >
+                              <FiEdit size={16} />
+                              Edit
+                            </Link>
+                            
+                            <button
+                              onClick={() => handleToggleStatus(work)}
+                              className={`flex items-center gap-1 ${
+                                work.status === 'published'
+                                  ? 'text-yellow-600 hover:text-yellow-900'
+                                  : 'text-green-600 hover:text-green-900'
+                              }`}
+                            >
+                              <FiEye size={16} />
+                              {work.status === 'published' ? 'Unpublish' : 'Publish'}
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <FiEye size={48} className="text-gray-400 mx-auto mb-4" />
+              <h3 className="text-xl text-gray-600 mb-2">No works found</h3>
+              <p className="text-gray-500 mb-6">
+                {searchQuery || statusFilter.length > 0 || categoryFilter !== 'all' || tagsFilter.length > 0
+                  ? "No works match your current filters. Try adjusting your search criteria."
+                  : "You haven't created any works yet. Get started by creating your first work!"}
+              </p>
+              <Link
+                to="/works/create"
+                className="inline-flex items-center gap-2 bg-black text-white px-6 py-3 rounded-md hover:bg-gray-800 transition-colors"
+              >
+                <FiPlus size={20} />
+                Create Your First Work
+              </Link>
+            </div>
+          )}
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex justify-center items-center gap-2 mt-8">
+              <button
+                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                disabled={currentPage <= 1}
+                className="px-3 py-2 border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Previous
+              </button>
+              
+              <span className="px-4 py-2 text-sm text-gray-600">
+                Page {currentPage} of {totalPages}
+              </span>
+              
+              <button
+                onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                disabled={currentPage >= totalPages}
+                className="px-3 py-2 border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Next
+              </button>
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 };

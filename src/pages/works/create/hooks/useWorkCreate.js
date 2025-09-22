@@ -45,6 +45,9 @@ export const useWorkCreate = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
 
+  // Save states
+  const [isSaving, setIsSaving] = useState(false);
+
   // Upload modal states
   const [isImageUploadModalOpen, setIsImageUploadModalOpen] = useState(false);
   const [isVideoUploadModalOpen, setIsVideoUploadModalOpen] = useState(false);
@@ -59,7 +62,7 @@ export const useWorkCreate = () => {
     title: "",
     client: "",
     category: "film/series",
-    year: "",
+    year: new Date().getFullYear().toString(),
     tag: [],
     description: "",
     videoProjectSrc: "",
@@ -322,6 +325,8 @@ export const useWorkCreate = () => {
     setIsUploading,
     uploadProgress,
     setUploadProgress,
+    isSaving,
+    setIsSaving,
     // Upload modal states
     isImageUploadModalOpen,
     setIsImageUploadModalOpen,

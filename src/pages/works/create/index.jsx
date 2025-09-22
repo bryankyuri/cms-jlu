@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
 import ImagePopup from "../../../components/ImagePopup.jsx";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import styles from "../../../styles/WorkDetail.module.scss";
 import { AppContext } from "../../../context/AppContext.jsx";
 import { FadeInSection } from "../../../components/FadeInSection.jsx";
@@ -14,7 +14,9 @@ import {
   FiUpload,
   FiMove,
   FiPlus,
+  FiInfo,
 } from "react-icons/fi";
+import { FaLightbulb } from "react-icons/fa";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
@@ -37,6 +39,7 @@ import { renderUtils } from "../../../utils/renderUtils.jsx";
 
 const WorkCreate = () => {
   const { deviceType } = useContext(AppContext);
+  const navigate = useNavigate();
 
   // Available tag options (predefined)
   const AVAILABLE_TAGS = ["MOTION GRAPHIC", "COLOR GRADING", "VFX", "CGI"];
@@ -88,6 +91,7 @@ const WorkCreate = () => {
     loadingVideos,
     isUploading,
     uploadProgress,
+    isSaving,
     heroBannerButtonBg,
     isHeroBannerVisible,
     // Functions
@@ -100,7 +104,10 @@ const WorkCreate = () => {
     workData,
     workCreateState.setWorkData,
     setTempImagesOrder,
-    tempImagesOrder
+    tempImagesOrder,
+    isSaving,
+    workCreateState.setIsSaving,
+    navigate
   );
 
   const mediaHandlers = useMediaHandlers(
@@ -149,7 +156,27 @@ const WorkCreate = () => {
 
   return (
     <div className={styles.workDetail}>
-      <ToastContainer position="bottom-right" autoClose={3000} />
+      <ToastContainer position="top-center" autoClose={3000} />
+
+      {/* Add validation highlight styles */}
+      <style>{`
+        .validation-highlight {
+          animation: highlight 1s ease-in-out 3;
+          box-shadow: 0 0 0px rgba(239, 68, 68, 0.5) !important;
+        }
+        
+        @keyframes highlight {
+          0%, 100% { 
+            background-color: transparent;
+            transform: scale(1);
+          }
+          50% { 
+            background-color: rgba(239, 68, 68, 0.3);
+            transform: scale(1);
+          }
+        }
+      `}</style>
+
       <div className="w-full mx-auto">
         <div
           className={`hero-banner-section w-full bg-black text-white relative ${styles.heroBanner} lg:mb-5 mb-[10px]`}
@@ -165,7 +192,17 @@ const WorkCreate = () => {
               deviceType === "desktop" ? `center 0px` : "center 0px",
             backgroundRepeat: "no-repeat",
           }}
-        ></div>
+        >
+          {!workData.heroBannerImage && (
+            <button
+              id="hero-banner-button"
+              onClick={modalHandlers.openHeroBannerModal}
+              className="absolute inset-0 flex items-center justify-center text-white"
+            >
+              No Hero Banner Image
+            </button>
+          )}
+        </div>
 
         {/* Sticky Hero Banner Edit Button */}
         {isHeroBannerVisible && (
@@ -178,12 +215,18 @@ const WorkCreate = () => {
             }}
           >
             <FiEdit className="mr-2" size={16} />
-            Edit Hero Banner
+            {workData.heroBannerImage ? (
+              "Edit Hero Banner"
+            ) : (
+              <>
+                Add Hero Banner <span className="text-red-700 ml-1"> *</span>
+              </>
+            )}
           </button>
         )}
 
         {/* Tags Section */}
-        <div className="w-full px-5">
+        <div id="tags-section" className="w-full px-5 py-2">
           <div className="flex gap-2 flex-wrap">
             <div className="font-semibold text-white bg-black px-2 py-1 rounded-[4px]">
               #
@@ -207,8 +250,10 @@ const WorkCreate = () => {
                   {tag}
                 </button>
               ))}
-              <div className="text-xs text-gray-500 flex items-center ml-2">
-                Click tag to select or unselect
+              <div className=" bg-blue-200 flex items-center ml-2 px-2 py-1 rounded-md text-black">
+                <FiInfo className="mr-1 text-blue-700" />
+                Click tag to select or unselect{" "}
+                <span className="text-red-700 ml-1"> *</span>
               </div>
             </>
           </div>
@@ -217,8 +262,13 @@ const WorkCreate = () => {
         <div className="w-full lg:text-[20px] text-[14px] text-black mx-auto px-5 flex my-[20px] lg:justify-end lg:flex-row flex-col-reverse border-b">
           <div className="w-full border-t lg:border-t-0 border-b border-black">
             <FadeInSection delay={0.3}>
-              <div className="w-full flex border-b border-black py-2 lg:py-5">
-                <div className="w-[68px] lg:mr-[60px] mr-[24px]">CLIENT</div>
+              <div
+                id="client-field"
+                className="w-full flex border-b border-black py-2 lg:py-5"
+              >
+                <div className="w-[78px] lg:mr-[60px] mr-[24px] flex">
+                  CLIENT <span className="text-red-700 ml-1"> *</span>
+                </div>
                 <div className="lg:w-[calc(50%-120px)] w-[calc(100%-76px)] font-medium">
                   <input
                     type="text"
@@ -236,8 +286,13 @@ const WorkCreate = () => {
               </div>
             </FadeInSection>
             <FadeInSection delay={0.3}>
-              <div className="w-full flex border-b border-black py-2 lg:py-5">
-                <div className="w-[68px] lg:mr-[60px] mr-[24px]">TITLE</div>
+              <div
+                id="title-field"
+                className="w-full flex border-b border-black py-2 lg:py-5"
+              >
+                <div className="w-[78px] lg:mr-[60px] mr-[24px] flex">
+                  TITLE <span className="text-red-700 ml-1"> *</span>
+                </div>
                 <div className="lg:w-[calc(50%-120px)] w-[calc(100%-76px)] font-medium">
                   <input
                     type="text"
@@ -256,7 +311,9 @@ const WorkCreate = () => {
             </FadeInSection>
             <FadeInSection delay={0.3}>
               <div className="w-full flex border-b border-black py-2 lg:py-5">
-                <div className="w-[68px] lg:mr-[60px] mr-[24px]">CATEGORY</div>
+                <div className="w-[78px] lg:mr-[60px] mr-[24px] flex">
+                  CATEGORY <span className="text-red-700 ml-1"> *</span>
+                </div>
                 <div className="lg:w-[calc(50%-120px)] w-[calc(100%-76px)] font-medium capitalize">
                   <select
                     value={workData.category}
@@ -275,8 +332,11 @@ const WorkCreate = () => {
               </div>
             </FadeInSection>
             <FadeInSection delay={0.3}>
-              <div className="w-full flex border-b border-black py-2 lg:py-5">
-                <div className="w-[68px] lg:mr-[60px] mr-[24px]">DESC.</div>
+              <div
+                id="description-field"
+                className="w-full flex border-b border-black py-2 lg:py-5"
+              >
+                <div className="w-[78px] lg:mr-[60px] mr-[24px]">DESC.</div>
                 <div className="lg:w-[calc(50%-120px)] w-[calc(100%-76px)] text-justify font-medium">
                   <textarea
                     value={workData.description}
@@ -293,8 +353,10 @@ const WorkCreate = () => {
               </div>
             </FadeInSection>
             <FadeInSection delay={0.3}>
-              <div className="w-full flex pt-2 lg:pt-5">
-                <div className="w-[68px] lg:mr-[60px] mr-[24px]">CREDITS</div>
+              <div id="credits-section" className="w-full flex pt-2 lg:pt-5">
+                <div className="w-[78px] lg:mr-[60px] mr-[24px] flex">
+                  CREDITS <span className="text-red-700 ml-1"> *</span>
+                </div>
                 <div className="w-full font-medium">
                   <DragDropContext
                     onDragEnd={workCreateHandlers.handleCreditsDragEnd}
@@ -389,17 +451,17 @@ const WorkCreate = () => {
                                                         }`}
                                                       >
                                                         <>
-                                                          {creditsItem.name
-                                                            .length > 1 && (
-                                                            <div
-                                                              {...provided.dragHandleProps}
-                                                              className="flex items-center justify-center p-1  text-white bg-black rounded-full cursor-grab active:cursor-grabbing"
-                                                            >
-                                                              <FiMove
-                                                                size={24}
-                                                              />
-                                                            </div>
-                                                          )}
+                                                          <div
+                                                            {...provided.dragHandleProps}
+                                                            className={`flex items-center justify-center p-1 text-white bg-black rounded-full cursor-grab active:cursor-grabbing ${
+                                                              creditsItem.name
+                                                                .length > 1
+                                                                ? ""
+                                                                : "opacity-0 pointer-events-none"
+                                                            }`}
+                                                          >
+                                                            <FiMove size={24} />
+                                                          </div>
                                                           <input
                                                             type="text"
                                                             value={item}
@@ -454,14 +516,16 @@ const WorkCreate = () => {
                                     </div>
 
                                     <div className="col-span-2 mt-4 justify-self-start mb-4">
-                                      <button
-                                        onClick={() =>
-                                          modalHandlers.removeCredit(index)
-                                        }
-                                        className="text-red-700 text-xs hover:text-white font-bold flex items-center gap-1 border bg-red-200 hover:bg-red-500 border-red-500 px-4 py-2 rounded-md"
-                                      >
-                                        <FiX size={16} /> REMOVE THIS CREDIT
-                                      </button>
+                                      {workData.credits.length > 1 && (
+                                        <button
+                                          onClick={() =>
+                                            modalHandlers.removeCredit(index)
+                                          }
+                                          className="text-red-700 text-xs hover:text-white font-bold flex items-center gap-1 border bg-red-200 hover:bg-red-500 border-red-500 px-4 py-2 rounded-md"
+                                        >
+                                          <FiX size={16} /> REMOVE THIS CREDIT
+                                        </button>
+                                      )}
                                     </div>
                                   </div>
                                 </div>
@@ -488,11 +552,13 @@ const WorkCreate = () => {
               </div>
             </FadeInSection>
             <FadeInSection delay={0.3}>
-              <div className="w-full flex border-b border-black py-2 lg:py-5">
-                <div className="w-[68px] lg:mr-[52px] mr-[24px]">©</div>
+              <div
+                id="year-field"
+                className="w-full flex border-b border-black py-2 lg:py-5"
+              >
+                <div className="w-[78px] lg:mr-[52px] mr-[24px]">©</div>
                 <div className="lg:w-[calc(50%-120px)] w-[calc(100%-76px)] font-medium">
-                  <input
-                    type="text"
+                  <select
                     value={workData.year}
                     onChange={(e) =>
                       workCreateHandlers.handleFieldChange(
@@ -501,8 +567,25 @@ const WorkCreate = () => {
                       )
                     }
                     className="w-full p-1 focus:outline-none bg-gray-50 border rounded-md border-black"
-                    placeholder="Year"
-                  />
+                  >
+                    <option value="">Select Year</option>
+                    {(() => {
+                      const currentYear = new Date().getFullYear();
+                      const years = [];
+                      for (
+                        let year = currentYear;
+                        year >= currentYear - 20;
+                        year--
+                      ) {
+                        years.push(
+                          <option key={year} value={year.toString()}>
+                            {year}
+                          </option>
+                        );
+                      }
+                      return years;
+                    })()}
+                  </select>
                 </div>
               </div>
             </FadeInSection>
@@ -514,7 +597,7 @@ const WorkCreate = () => {
           <div id="Video Project" className="lg:mb-[10px] mb-[10px]">
             <div className="px-5 mb-8 mt-16 lg:max-w-[50%]">
               <label className="text-lg font-medium text-black mb-2 block">
-                Project Video:
+                Project Video <span className="text-red-700 ml-1"> *</span>
               </label>
               <div className="flex items-center gap-4">
                 <button
@@ -545,42 +628,51 @@ const WorkCreate = () => {
                     : "calc(86.25% - 62px)",
               }}
             >
-              <video
-                className="absolute top-0 left-0 w-full h-full object-cover"
-                src={workData.videoProjectSrc}
-                poster={workData.videoProjectPosterUrl}
-                controls
-                controlsList="nodownload noplaybackrate"
-                playsInline
-                preload="metadata"
-                style={{ borderRadius: "0px" }}
-                onError={(e) => {
-                  console.log("Showreel video failed to load:", e);
-                }}
-                onLoadedData={() => {
-                  console.log("Showreel video loaded successfully");
-                }}
-                onPlay={(e) => {
-                  // Auto fullscreen when video starts playing
-                  if (e.target.requestFullscreen) {
-                    e.target.requestFullscreen().catch((err) => {
-                      console.log("Fullscreen request failed:", err);
-                    });
-                  } else if (e.target.webkitRequestFullscreen) {
-                    e.target.webkitRequestFullscreen();
-                  } else if (e.target.msRequestFullscreen) {
-                    e.target.msRequestFullscreen();
-                  }
-                }}
-              >
-                Your browser does not support the video tag.
-              </video>
+              {workData.videoProjectSrc ? (
+                <video
+                  className="absolute top-0 left-0 w-full h-full object-cover"
+                  src={workData.videoProjectSrc}
+                  poster={workData.videoProjectPosterUrl}
+                  controls
+                  controlsList="nodownload noplaybackrate"
+                  playsInline
+                  preload="metadata"
+                  style={{ borderRadius: "0px" }}
+                  onError={(e) => {
+                    console.log("Showreel video failed to load:", e);
+                  }}
+                  onLoadedData={() => {
+                    console.log("Showreel video loaded successfully");
+                  }}
+                  onPlay={(e) => {
+                    // Auto fullscreen when video starts playing
+                    if (e.target.requestFullscreen) {
+                      e.target.requestFullscreen().catch((err) => {
+                        console.log("Fullscreen request failed:", err);
+                      });
+                    } else if (e.target.webkitRequestFullscreen) {
+                      e.target.webkitRequestFullscreen();
+                    } else if (e.target.msRequestFullscreen) {
+                      e.target.msRequestFullscreen();
+                    }
+                  }}
+                >
+                  Your browser does not support the video tag.
+                </video>
+              ) : (
+                <button
+                  onClick={modalHandlers.openVideoProjectModal}
+                  className="absolute inset-0 flex items-center justify-center bg-[#000000c8] border text-white"
+                >
+                  No video selected
+                </button>
+              )}
             </div>
           </div>
         </FadeInSection>
 
         {/* Project Details */}
-        <div className="w-full mx-auto lg:px-5" id="project-images-showcase">
+        <div id="gallery-section" className="w-full mx-auto lg:px-5 pb-24">
           <>
             {workData.images.length > 0 ? (
               <>
@@ -604,14 +696,42 @@ const WorkCreate = () => {
                 ))}
               </>
             ) : (
-              <div className="w-full pt-24 flex justify-center items-center">
-                <button
-                  onClick={galleryHandlers.openGalleryModal}
-                  className="px-4 py-2 bg-gray-100 rounded-md text-gray-800 hover:bg-gray-200 flex items-center"
-                >
-                  <FiImage className="mr-2" />
-                  Add Project Gallery
-                </button>
+              <div className="w-full pt-24">
+                <div className="max-w-md mx-auto text-center">
+                  {/* Empty State Icon */}
+                  <div className="mb-6 flex justify-center">
+                    <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center">
+                      <FiImage size={40} className="text-gray-400" />
+                    </div>
+                  </div>
+
+                  {/* Empty State Message */}
+                  <div className="mb-8">
+                    <h3 className="text-xl font-semibold text-gray-700 mb-2">
+                      No Project Gallery Yet
+                    </h3>
+                    <p className="text-gray-500 text-sm leading-relaxed">
+                      Showcase your project with stunning visuals. Add images to
+                      create a compelling gallery that tells your project's
+                      story.
+                    </p>
+                  </div>
+
+                  {/* Add Gallery Button */}
+                  <button
+                    onClick={galleryHandlers.openGalleryModal}
+                    className="px-8 py-3 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors flex items-center justify-center mx-auto shadow-md"
+                  >
+                    <FiImage className="mr-3" size={20} />
+                    <span className="font-medium">Add Project Gallery</span>
+                  </button>
+
+                  {/* Helper Text */}
+                  <p className="text-xs text-gray-400 mt-4">
+                    You can add multiple image types including full-width,
+                    columns, and before/after comparisons
+                  </p>
+                </div>
               </div>
             )}
           </>
@@ -625,10 +745,34 @@ const WorkCreate = () => {
         <div className=" mx-auto px-5 py-3 flex justify-between items-center">
           <div className="text-sm text-gray-500">
             <div>
-              <div className="font-medium">Editing work details</div>
-              <div className="text-xs">
-                Edit: Title, Client, Category, Description, Tags, Video URL,
-                Credits & Gallery
+              {/* Validation Status Indicator */}
+              <div className="flex items-center gap-2 mt-1">
+                {(() => {
+                  const validation = workCreateHandlers.getValidationStatus();
+                  if (validation.isValid) {
+                    return (
+                      <span className="text-green-600 text-xs flex items-center">
+                        <div className="w-2 h-2 bg-green-500 rounded-full mr-1"></div>
+                        Ready to publish/save
+                      </span>
+                    );
+                  } else {
+                    return (
+                      <button
+                        onClick={() =>
+                          workCreateHandlers.scrollToMissingField()
+                        }
+                        className="text-red-600 flex items-center hover:text-red-800 transition-colors cursor-pointer"
+                      >
+                        <div className="w-2 h-2 bg-red-500 rounded-full mr-1"></div>
+                        Required fields must be filled{" "}
+                        <div className="px-3 py-2 text-xs bg-red-500 ml-2 text-white rounded-md flex justify-center items-center gap-2 italic">
+                          <FaLightbulb size={16} /> Show missing field
+                        </div>
+                      </button>
+                    );
+                  }
+                })()}
               </div>
             </div>
           </div>
@@ -642,20 +786,65 @@ const WorkCreate = () => {
                 Edit Project Gallery
               </button>
             )}
-            <button
-              onClick={workCreateHandlers.saveChanges}
-              className="px-4 py-2 bg-black text-white rounded-md flex items-center"
-            >
-              <FiSave className="mr-2" />
-              Save and Publish
-            </button>
-            <button
-              onClick={workCreateHandlers.saveChanges}
-              className="px-4 py-2 bg-orange-500 text-white rounded-md flex items-center"
-            >
-              <FiSave className="mr-2" />
-              Save as Draft
-            </button>
+            {(() => {
+              const validation = workCreateHandlers.getValidationStatus();
+              return (
+                <>
+                  <button
+                    onClick={workCreateHandlers.savePublish}
+                    disabled={isSaving || !validation.canPublish}
+                    className={`px-4 py-2 rounded-md flex items-center ${
+                      isSaving || !validation.canPublish
+                        ? "bg-gray-400 text-gray-200 cursor-not-allowed"
+                        : "bg-black text-white hover:bg-gray-800"
+                    }`}
+                    title={
+                      !validation.canPublish
+                        ? "Please complete all required fields to publish"
+                        : ""
+                    }
+                  >
+                    {isSaving ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
+                        Publishing...
+                      </>
+                    ) : (
+                      <>
+                        <FiSave className="mr-2" />
+                        Save and Publish
+                      </>
+                    )}
+                  </button>
+                  <button
+                    onClick={workCreateHandlers.saveDraft}
+                    disabled={isSaving || !validation.canSaveDraft}
+                    className={`px-4 py-2 rounded-md flex items-center ${
+                      isSaving || !validation.canSaveDraft
+                        ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                        : "bg-orange-500 text-white hover:bg-orange-600"
+                    }`}
+                    title={
+                      !validation.canSaveDraft
+                        ? "Title is required to save as draft"
+                        : ""
+                    }
+                  >
+                    {isSaving ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
+                        Saving...
+                      </>
+                    ) : (
+                      <>
+                        <FiSave className="mr-2" />
+                        Save as Draft
+                      </>
+                    )}
+                  </button>
+                </>
+              );
+            })()}
           </div>
         </div>
       </div>

@@ -314,7 +314,7 @@ const AddGalleryItemModal = ({
               </div>
             ) : (
               <>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 min-h-96 overflow-y-auto border border-gray-200 rounded-lg p-3">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 min-h-52 overflow-y-auto border border-gray-200 rounded-lg p-3">
                   {availableImages.map((image) => {
                     const isSelected = selectedImages.find(
                       (img) => img.id === image.id
@@ -326,7 +326,7 @@ const AddGalleryItemModal = ({
                     return (
                       <div
                         key={image.id}
-                        className={`group relative rounded-lg overflow-hidden border-2 transition-all ${
+                        className={`group relative rounded-lg overflow-hidden border-2 transition-all h-48 ${
                           isSelected
                             ? "border-green-500 ring-2 ring-green-500 ring-opacity-50"
                             : canSelect
@@ -344,13 +344,17 @@ const AddGalleryItemModal = ({
                         {canSelect && (
                           <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                             <button
-                              onClick={() => handleImageSelection(image)}
+                              onClick={() => {handleImageSelection(image)}}
                               className="bg-black text-white p-2 rounded-lg hover:bg-gray-800 transition-colors flex items-center gap-1 text-xs"
                               title={
                                 isSelected ? "Unselect Image" : "Select Image"
                               }
                             >
-                              <FiMousePointer size={12} />
+                              {isSelected ? (
+                                <FiX size={16} className="text-red-500" />
+                              ) : (
+                                <FiCheck size={16} className="text-green-500" />
+                              )}
                               {isSelected ? "Unselect" : "Select"}
                             </button>
                             <button

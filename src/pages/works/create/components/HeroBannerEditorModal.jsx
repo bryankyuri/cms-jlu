@@ -270,16 +270,16 @@ const HeroBannerEditorModal = ({
               </div>
             ) : (
               <>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 min-h-96 border border-gray-200 rounded-lg p-3">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 min-h-52 border border-gray-200 rounded-lg p-3">
                   {availableImages.map((image) => {
                     const isSelected = selectedHeroBannerImage?.id === image.id;
 
                     return (
                       <div
                         key={image.id}
-                        className={`relative cursor-pointer rounded-lg overflow-hidden border-2 transition-all group ${
+                        className={`relative cursor-pointer rounded-lg overflow-hidden border-2 transition-all group h-48 ${
                           isSelected
-                            ? "border-black ring-2 ring-black ring-opacity-50"
+                            ? "border-green-500 ring-2 ring-green-500 ring-opacity-50"
                             : "border-gray-200 hover:border-gray-400"
                         }`}
                       >
@@ -294,6 +294,23 @@ const HeroBannerEditorModal = ({
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
+                              isSelected ? handleHeroBannerImageSelection("") : handleHeroBannerImageSelection(image);
+                            }}
+                            className="bg-black bg-opacity-90 hover:bg-opacity-100 text-white px-3 py-1.5 rounded-md text-sm font-medium flex items-center gap-1 transition-all"
+                            title={
+                              isSelected ? "Unselect Image" : "Select Image"
+                            }
+                          >
+                            {isSelected ? (
+                              <FiX size={16} className="text-red-500" />
+                            ) : (
+                              <FiCheck size={16} className="text-green-500" />
+                            )}
+                            {isSelected ? "Unselect" : "Select"}
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
                               handleImagePreview(image);
                             }}
                             className="bg-white bg-opacity-90 hover:bg-opacity-100 text-gray-800 px-3 py-1.5 rounded-md text-sm font-medium flex items-center gap-1 transition-all"
@@ -301,19 +318,6 @@ const HeroBannerEditorModal = ({
                           >
                             <FiEye size={14} />
                             Preview
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleHeroBannerImageSelection(image);
-                            }}
-                            className="bg-black bg-opacity-90 hover:bg-opacity-100 text-white px-3 py-1.5 rounded-md text-sm font-medium flex items-center gap-1 transition-all"
-                            title={
-                              isSelected ? "Unselect Image" : "Select Image"
-                            }
-                          >
-                            <FiMousePointer size={14} />
-                            {isSelected ? "Unselect" : "Select"}
                           </button>
                         </div>
 

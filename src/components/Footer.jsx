@@ -74,7 +74,7 @@ const Footer = ({ deviceType }) => {
         </div>
       </div> */}
       {deviceType === "desktop" ? (
-        <div className="w-full flex justify-between py-5 text-[10px] font-semibold text-black mt-[117px]">
+        <div className="w-full flex justify-between py-5 text-[10px] font-semibold text-black mt-[24px]">
           <div className="w-full">©2024</div>
           <div className="w-full">SITE BY PLAYGROUND STUDIO</div>
           <div className="w-full"></div>
