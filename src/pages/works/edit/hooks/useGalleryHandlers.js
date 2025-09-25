@@ -1,13 +1,13 @@
 import { toast } from "react-toastify";
 import { mediaAPI } from "../../../../api";
 
-// Body scroll utilities
+// Utility functions to manage body scroll
 const disableBodyScroll = () => {
   document.body.style.overflow = 'hidden';
 };
 
 const enableBodyScroll = () => {
-  document.body.style.overflow = '';
+  document.body.style.overflow = 'unset';
 };
 
 // Gallery handling functions
@@ -27,7 +27,9 @@ export const useGalleryHandlers = (
   setEditingGalleryItem,
   setIsRemoveConfirmOpen,
   setRemoveItemIndex,
-  fetchAvailableImages
+  fetchAvailableImages,
+  // Upload modal state
+  setIsImageUploadModalOpen
 ) => {
   // Gallery editing functions
   const openGalleryModal = () => {
@@ -63,7 +65,7 @@ export const useGalleryHandlers = (
     setSelectedImageType("full-width");
     setSelectedImages([]);
     setEditingGalleryItem(null);
-    disableBodyScroll();
+    // Don't disable body scroll here since Gallery Editor Modal is already handling it
     fetchAvailableImages();
   };
 
@@ -72,7 +74,8 @@ export const useGalleryHandlers = (
     setIsAddGalleryModalOpen(false);
     setSelectedImages([]);
     setEditingGalleryItem(null);
-    enableBodyScroll();
+    // Don't enable body scroll here since Gallery Editor Modal might still be open
+    // Body scroll will be managed by the Gallery Editor Modal
   };
 
   // Handle image selection for gallery item
@@ -202,6 +205,17 @@ export const useGalleryHandlers = (
     enableBodyScroll();
   };
 
+  // Upload modal functions for gallery
+  const openImageUploadModal = () => {
+    setIsImageUploadModalOpen(true);
+    disableBodyScroll();
+  };
+
+  const closeImageUploadModal = () => {
+    setIsImageUploadModalOpen(false);
+    enableBodyScroll();
+  };
+
   return {
     openGalleryModal,
     closeGalleryModal,
@@ -216,5 +230,8 @@ export const useGalleryHandlers = (
     removeGalleryItem,
     showRemoveConfirmation,
     cancelRemoveConfirmation,
+    // Upload modal functions
+    openImageUploadModal,
+    closeImageUploadModal,
   };
 };

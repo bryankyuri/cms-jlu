@@ -326,6 +326,14 @@ export const worksAPI = {
     });
   },
 
+  // Save changes to existing work (optimized for incremental updates)
+  saveChanges: async (id, workData) => {
+    return await apiRequest(`/works/${id}/save-changes`, {
+      method: 'PATCH',
+      body: JSON.stringify(workData),
+    });
+  },
+
   // Delete work
   delete: async (id) => {
     return await apiRequest(`/works/${id}`, {
@@ -370,6 +378,50 @@ export const worksAPI = {
     return await apiRequest('/works', {
       method: 'POST',
       body: JSON.stringify(publishData),
+    });
+  }
+};
+
+// Video Banner API
+export const videoBannerAPI = {
+  // Get all video banners
+  getAll: async () => {
+    return await apiRequest('/video-banners');
+  },
+
+  // Get single video banner by ID
+  get: async (id) => {
+    return await apiRequest(`/video-banners/${id}`);
+  },
+
+  // Create new video banner
+  create: async (bannerData) => {
+    return await apiRequest('/video-banners', {
+      method: 'POST',
+      body: JSON.stringify(bannerData),
+    });
+  },
+
+  // Update existing video banner
+  update: async (id, bannerData) => {
+    return await apiRequest(`/video-banners/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(bannerData),
+    });
+  },
+
+  // Delete video banner
+  delete: async (id) => {
+    return await apiRequest(`/video-banners/${id}`, {
+      method: 'DELETE',
+    });
+  },
+
+  // Reorder video banners
+  reorder: async (bannersData) => {
+    return await apiRequest('/video-banners/reorder', {
+      method: 'POST',
+      body: JSON.stringify(bannersData),
     });
   }
 };

@@ -1,15 +1,16 @@
 import { useState, useRef, useEffect } from "react";
+import { useParams } from "react-router-dom";
 import { toast } from "react-toastify";
-import { mediaAPI } from "../../../../api/index";
+import { mediaAPI, worksAPI } from "../../../../api/index";
 
-export const useWorkDetail = (workId) => {
+export const useWorkEdit = () => {
+  const { id } = useParams(); // Get work ID from URL params
   // Animation states
   const [sliderPosition, setSliderPosition] = useState(50);
   const [isAnimating, setIsAnimating] = useState(false);
   const animationRef = useRef(null);
 
   // Edit functionality states
-  const [editMode, setEditMode] = useState(false);
   const [isGalleryModalOpen, setIsGalleryModalOpen] = useState(false);
   const [tempImagesOrder, setTempImagesOrder] = useState([]);
   const [galleryModalAnimated, setGalleryModalAnimated] = useState(false);
@@ -46,36 +47,42 @@ export const useWorkDetail = (workId) => {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
 
+  // Save states
+  const [isSaving, setIsSaving] = useState(false);
+  
+  // Loading states
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState(null);
+
+  // Upload modal states
+  const [isImageUploadModalOpen, setIsImageUploadModalOpen] = useState(false);
+  const [isVideoUploadModalOpen, setIsVideoUploadModalOpen] = useState(false);
+
   // Hero banner button states
   const [heroBannerButtonBg, setHeroBannerButtonBg] = useState("bg-black bg-opacity-70");
   const [isHeroBannerVisible, setIsHeroBannerVisible] = useState(true);
 
   // Work data state
   const [workData, setWorkData] = useState({
-    id: workId,
-    heroBannerImage: "/hero-banner-detailwork.jpg",
-    title: "Video Title",
-    client: "Client Name",
+    heroBannerImage: "",
+    title: "",
+    client: "",
     category: "film/series",
-    year: "2024",
-    tag: ["MOTION GRAPHIC", "COLOR GRADING", "VFX", "CGI"],
-    description: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat. Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat, vel illum dolore eu feugiat nulla facilisi.",
-    videoProjectSrc: "https://videos.virtual-app.my.id/tokpedia_ramadhan.mp4",
+    year: new Date().getFullYear().toString(),
+    tag: [],
+    description: "",
+    videoProjectSrc: "",
+    videoProjectPosterUrl: "",
     credits: [
       { role: "Director", name: ["Your Name"] },
-      { role: "Producer", name: ["Your Name", "Your Name"] },
-      { role: "DOP", name: ["Your Name", "Your Name"] },
-      { role: "Colorist", name: ["Your Name", "Your Name"] },
-      { role: "Visual Effect", name: ["Your Name", "Your Name", "Your Name"] },
-      { role: "Motion Graphic", name: ["Your Name", "Your Name"] },
+      { role: "Producer", name: ["Your Name"] },
+      { role: "DOP", name: ["Your Name"] },
+      { role: "Colorist", name: ["Your Name"] },
+      { role: "Visual Effect", name: ["Your Name"] },
+      { role: "Motion Graphic", name: ["Your Name"] },
     ],
     images: [
-      { id: "01", type: "full-width", imageUrl: "/assets/workDetail/work1.jpg" },
-      { id: "02", type: "2col-full", imageUrl: ["/assets/workDetail/work2.jpg", "/assets/workDetail/work3.jpg"] },
-      { id: "03", type: "2col-full", imageUrl: ["/assets/workDetail/work4.jpg", "/assets/workDetail/work5.jpg"] },
-      { id: "04", type: "compare-full", imageUrl: ["/assets/workDetail/work6B.jpg", "/assets/workDetail/work6.jpg"] },
-      { id: "05", type: "2col-4:5", imageUrl: ["/assets/workDetail/work7.jpg", "/assets/workDetail/work8.jpg"] },
-      { id: "06", type: "full-width", imageUrl: "/assets/workDetail/work9.jpg" },
+      
     ],
   });
 
@@ -277,13 +284,83 @@ export const useWorkDetail = (workId) => {
     }
   };
 
+  // Transform API work data to component format
+  const transformApiDataToWorkData = (apiData) => {
+    return {
+      heroBannerImage: apiData.hero_banner_image || "",
+      title: apiData.title || "",
+      client: apiData.client || "",
+      category: apiData.category || "film/series",
+      year: apiData.year || new Date().getFullYear().toString(),
+      tag: apiData.tags || [],
+      description: apiData.description || "",
+      videoProjectSrc: apiData.video_project_src || "",
+      videoProjectPosterUrl: apiData.video_project_poster || "",
+      credits: apiData.credits && apiData.credits.length > 0 
+        ? apiData.credits.map(credit => ({
+            role: credit.role || "",
+            name: credit.names || []
+          }))
+        : [
+            { role: "Director", name: ["Your Name"] },
+            { role: "Producer", name: ["Your Name"] },
+            { role: "DOP", name: ["Your Name"] },
+            { role: "Colorist", name: ["Your Name"] },
+            { role: "Visual Effect", name: ["Your Name"] },
+            { role: "Motion Graphic", name: ["Your Name"] },
+          ],
+      images: apiData.gallery_items && apiData.gallery_items.length > 0
+        ? apiData.gallery_items.map(item => ({
+            id: item.id,
+            type: item.type,
+            imageUrl: item.images
+          }))
+        : [],
+      status: apiData.status || "draft",
+      // Store the original ID for updates
+      id: apiData.id,
+    };
+  };
+
+  // Fetch work data for editing
+  const fetchWorkData = async () => {
+    if (!id) {
+      setIsLoading(false);
+      return;
+    }
+
+    setIsLoading(true);
+    setLoadError(null);
+    
+    try {
+      const response = await worksAPI.get(id);
+      
+      if (response.success) {
+        const transformedData = transformApiDataToWorkData(response.data);
+        setWorkData(transformedData);
+      } else {
+        setLoadError(response.message || "Failed to load work data");
+        toast.error("Failed to load work data");
+      }
+    } catch (error) {
+      console.error("Error fetching work:", error);
+      setLoadError("Failed to load work data");
+      toast.error("Failed to load work data");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Fetch work data on component mount
+  useEffect(() => {
+    fetchWorkData();
+  }, [id]);
+
   return {
     // States
     sliderPosition,
     setSliderPosition,
     isAnimating,
-    editMode,
-    setEditMode,
     isGalleryModalOpen,
     setIsGalleryModalOpen,
     tempImagesOrder,
@@ -326,6 +403,16 @@ export const useWorkDetail = (workId) => {
     setIsUploading,
     uploadProgress,
     setUploadProgress,
+    isSaving,
+    setIsSaving,
+    // Loading states
+    isLoading,
+    loadError,
+    // Upload modal states
+    isImageUploadModalOpen,
+    setIsImageUploadModalOpen,
+    isVideoUploadModalOpen,
+    setIsVideoUploadModalOpen,
     heroBannerButtonBg,
     isHeroBannerVisible,
     workData,

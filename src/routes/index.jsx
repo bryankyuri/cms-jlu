@@ -5,6 +5,7 @@ import Dashboard from "../pages/Dashboard";
 import Works from "../pages/Works";
 import WorkDetail from "../pages/works/detail/index";
 import WorkCreate from "../pages/works/create/index";
+import WorkEdit from "../pages/works/edit/index";
 import Login from "../pages/Login";
 import ForgotPassword from "../pages/ForgotPassword";
 import ResetPassword from "../pages/ResetPassword";
@@ -85,9 +86,14 @@ export const router = createBrowserRouter([
         loader: () => null,
       },
       {
-        path: "works/:workId",
+        path: "works/detail/:id",
         element: <WorkDetail />,
-        loader: ({ params }) => params || null,
+        loader: () => null,
+      },
+       {
+        path: "works/edit/:id",
+        element: <WorkEdit />,
+        loader: () => null,
       },
       {
         path: "media",

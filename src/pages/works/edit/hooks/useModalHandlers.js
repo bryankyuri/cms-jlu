@@ -23,7 +23,10 @@ export const useModalHandlers = (
   selectedVideoProject,
   setSelectedVideoProject,
   fetchAvailableImages,
-  fetchAvailableVideos
+  fetchAvailableVideos,
+  // Upload modal states
+  setIsImageUploadModalOpen,
+  setIsVideoUploadModalOpen
 ) => {
   // Credit removal confirmation functions
   const showCreditRemoveConfirmation = (index) => {
@@ -114,6 +117,7 @@ export const useModalHandlers = (
     setWorkData((prevData) => ({
       ...prevData,
       videoProjectSrc: videoUrl,
+      videoProjectPosterUrl: selectedVideoProject.poster_url,
     }));
 
     closeVideoProjectModal();
@@ -123,6 +127,27 @@ export const useModalHandlers = (
   // Function to remove credit (shows confirmation)
   const removeCredit = (index) => {
     showCreditRemoveConfirmation(index);
+  };
+
+  // Upload modal functions
+  const openImageUploadModal = () => {
+    setIsImageUploadModalOpen(true);
+    disableBodyScroll();
+  };
+
+  const closeImageUploadModal = () => {
+    setIsImageUploadModalOpen(false);
+    enableBodyScroll();
+  };
+
+  const openVideoUploadModal = () => {
+    setIsVideoUploadModalOpen(true);
+    disableBodyScroll();
+  };
+
+  const closeVideoUploadModal = () => {
+    setIsVideoUploadModalOpen(false);
+    enableBodyScroll();
   };
 
   return {
@@ -138,5 +163,10 @@ export const useModalHandlers = (
     handleVideoProjectSelection,
     updateVideoProject,
     removeCredit,
+    // Upload modal functions
+    openImageUploadModal,
+    closeImageUploadModal,
+    openVideoUploadModal,
+    closeVideoUploadModal,
   };
 };

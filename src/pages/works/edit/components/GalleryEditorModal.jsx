@@ -1,10 +1,16 @@
 import React, { useEffect } from "react";
-import { FiX, FiPlusCircle, FiMove, FiEdit, FiTrash2 } from "react-icons/fi";
+import {
+  FiX,
+  FiPlusCircle,
+  FiMove,
+  FiEdit,
+  FiTrash2,
+} from "react-icons/fi";
+import { GrGallery } from "react-icons/gr";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 
 const GalleryEditorModal = ({
   isGalleryModalOpen,
-  setIsGalleryModalOpen,
   galleryModalAnimated,
   setGalleryModalAnimated,
   tempImagesOrder,
@@ -17,14 +23,28 @@ const GalleryEditorModal = ({
   showRemoveConfirmation,
   applyGalleryChanges,
 }) => {
-  if (!isGalleryModalOpen) return null;
-
   // Trigger animation only once when modal opens
   useEffect(() => {
     if (isGalleryModalOpen && !galleryModalAnimated) {
       setGalleryModalAnimated(true);
     }
   }, [isGalleryModalOpen, galleryModalAnimated, setGalleryModalAnimated]);
+
+  // Manage body scroll for gallery editor modal
+  useEffect(() => {
+    if (isGalleryModalOpen) {
+      document.body.style.overflow = "hidden";
+    }
+
+    // Cleanup when modal closes or component unmounts
+    return () => {
+      if (!isGalleryModalOpen) {
+        document.body.style.overflow = "";
+      }
+    };
+  }, [isGalleryModalOpen]);
+
+  if (!isGalleryModalOpen) return null;
 
   return (
     <div
@@ -50,7 +70,9 @@ const GalleryEditorModal = ({
         <div className="overflow-y-auto p-6 flex-grow">
           <div className="flex justify-between items-center mb-6">
             <p className="text-gray-500">
-              Drag items to reorder your project gallery.
+              {tempImagesOrder.length > 0 && (
+                <>Drag items to reorder your project gallery.</>
+              )}
             </p>
             <button
               onClick={openAddGalleryModal}
@@ -60,7 +82,14 @@ const GalleryEditorModal = ({
               Add Gallery Item
             </button>
           </div>
-
+          {tempImagesOrder.length === 0 && (
+            <>
+              <GrGallery  className="mx-auto text-6xl text-gray-300 mb-4 mt-60" />
+              <p className="text-center text-gray-500">
+                No gallery items added yet.
+              </p>
+            </>
+          )}
           <DragDropContext onDragEnd={handleDragEnd}>
             <Droppable droppableId="gallery-items">
               {(provided) => (

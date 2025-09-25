@@ -161,7 +161,6 @@ const Works = () => {
             <MultiSelect
               options={[
                 { value: 'published', label: 'Published' },
-                { value: 'unpublished', label: 'Unpublished' },
                 { value: 'draft', label: 'Draft' }
               ]}
               value={statusFilter}
@@ -378,7 +377,15 @@ const Works = () => {
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <div className="flex items-center gap-2">
                             <Link
-                              to={`/works/${work.id}/edit`}
+                              to={`/works/detail/${work.id}`}
+                              className="text-indigo-600 hover:text-indigo-900 flex items-center gap-1"
+                            >
+                              <FiEye size={16} />
+                              View
+                            </Link>
+                            
+                            <Link
+                              to={`/works/edit/${work.id}`}
                               className="text-blue-600 hover:text-blue-900 flex items-center gap-1"
                             >
                               <FiEdit size={16} />
