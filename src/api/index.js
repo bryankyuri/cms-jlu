@@ -426,6 +426,54 @@ export const videoBannerAPI = {
   }
 };
 
+// Analytics API functions
+export const analyticsAPI = {
+  // Get dashboard analytics data
+  getDashboardData: async (period = 'last30days') => {
+    return await apiRequest('/analytics/dashboard', {
+      method: 'POST',
+      body: JSON.stringify({ period }),
+    });
+  },
+
+  // Get real-time analytics
+  getRealTimeData: async () => {
+    return await apiRequest('/analytics/realtime');
+  },
+
+  // Get page analytics
+  getPageAnalytics: async (pagePath, period = 'last30days') => {
+    return await apiRequest('/analytics/page', {
+      method: 'POST',
+      body: JSON.stringify({ pagePath, period }),
+    });
+  },
+
+  // Get audience insights
+  getAudienceInsights: async (period = 'last30days') => {
+    return await apiRequest('/analytics/audience', {
+      method: 'POST',
+      body: JSON.stringify({ period }),
+    });
+  },
+
+  // Get traffic sources
+  getTrafficSources: async (period = 'last30days') => {
+    return await apiRequest('/analytics/traffic-sources', {
+      method: 'POST',
+      body: JSON.stringify({ period }),
+    });
+  },
+
+  // Get conversion data
+  getConversions: async (period = 'last30days') => {
+    return await apiRequest('/analytics/conversions', {
+      method: 'POST',
+      body: JSON.stringify({ period }),
+    });
+  }
+};
+
 // Legacy functions for backward compatibility
 export const fetchData = async (endpoint) => {
   return await apiRequest(endpoint);

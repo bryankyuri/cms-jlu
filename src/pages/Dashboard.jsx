@@ -1,11 +1,12 @@
-import React, { useState, useEffect, useContext } from "react";
-import { FiUsers, FiEye, FiClock, FiArrowUp, FiArrowDown } from "react-icons/fi";
+import React, { useState, useContext, useEffect } from "react";
+import { FiUsers, FiEye, FiClock, FiArrowUp, FiArrowDown, FiWifi, FiWifiOff } from "react-icons/fi";
 import { Line, Bar, Doughnut } from "react-chartjs-2";
 import { Chart, registerables } from "chart.js";
 import { ComposableMap, Geographies, Geography, Marker } from "react-simple-maps";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { AppContext } from "../context/AppContext";
+import googleAnalytics from "../services/googleAnalytics";
 
 // Register Chart.js components
 Chart.register(...registerables);
@@ -15,117 +16,118 @@ const geoUrl = "https://unpkg.com/world-atlas@2.0.2/countries-110m.json";
 
 const Dashboard = () => {
   const [period, setPeriod] = useState("last30days");
-  const [isLoading, setIsLoading] = useState(true);
   const [analyticsData, setAnalyticsData] = useState(null);
-  const { isMobile } = useContext(AppContext); // Get the isMobile value from context
-
-  useEffect(() => {
-    // Simulate loading analytics data
-    setIsLoading(true);
-    fetchAnalyticsData(period)
-      .then(data => {
-        setAnalyticsData(data);
-        setIsLoading(false);
-      })
-      .catch(error => {
-        console.error("Error fetching analytics data:", error);
-        toast.error("Failed to load analytics data");
-        setIsLoading(false);
-      });
-  }, [period]);
-
-  // Mock function to simulate API call to Google Analytics
-  // In a real implementation, this would be a call to your backend API
-  const fetchAnalyticsData = async (timePeriod) => {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    // Mock data structure similar to what you'd get from GA
-    return {
-      summary: {
-        visitors: {
-          value: 24879,
-          change: 12.5,
-          positive: true
-        },
-        pageViews: {
-          value: 67432,
-          change: 8.3,
-          positive: true
-        },
-        avgSessionTime: {
-          value: "2:45",
-          change: -5.2,
-          positive: false
-        },
-        bounceRate: {
-          value: "32.4%",
-          change: -3.1,
-          positive: true
-        }
-      },
-      visitorChart: {
-        labels: ["1 May", "5 May", "10 May", "15 May", "20 May", "25 May", "30 May"],
-        datasets: [
-          {
-            label: "Visitors",
-            data: [5200, 6100, 4800, 7900, 9200, 8400, 10200],
-            borderColor: "#000000",
-            backgroundColor: "rgba(0, 0, 0, 0.1)",
-            tension: 0.4
-          }
-        ]
-      },
-      deviceChart: {
-        labels: ["Desktop", "Mobile", "Tablet"],
-        datasets: [
-          {
-            data: [58, 35, 7],
-            backgroundColor: ["#000000", "#666666", "#cccccc"],
-            borderWidth: 0
-          }
-        ]
-      },
-      topPages: [
-        { url: "/works/pillow-walk-aldo", title: "PILLOW WALK - ALDO", views: 14322, avgTime: "3:21" },
-        { url: "/works/tokopedia-ramadan", title: "TOKOPEDIA - RAMADAN 2024", views: 9876, avgTime: "2:45" },
-        { url: "/works/trust-in-gold", title: "TRUST IN GOLD - UBS GOLD", views: 8721, avgTime: "2:12" },
-        { url: "/works/speak-to-me-sociolla", title: "SPEAK TO ME - SOCIOLLA", views: 7654, avgTime: "1:58" },
-        { url: "/about", title: "About Page", views: 5433, avgTime: "2:37" }
-      ],
-      locationData: [
-        { city: "Jakarta", country: "Indonesia", visitors: 5430, coordinates: [106.8456, -6.2088] },
-        { city: "Singapore", country: "Singapore", visitors: 3210, coordinates: [103.8198, 1.3521] },
-        { city: "New York", country: "USA", visitors: 2870, coordinates: [-74.0060, 40.7128] },
-        { city: "London", country: "UK", visitors: 2450, coordinates: [-0.1278, 51.5074] },
-        { city: "Tokyo", country: "Japan", visitors: 1980, coordinates: [139.6917, 35.6895] },
-        { city: "Sydney", country: "Australia", visitors: 1740, coordinates: [151.2093, -33.8688] },
-        { city: "Berlin", country: "Germany", visitors: 1690, coordinates: [13.4050, 52.5200] }
-      ]
-    };
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const { isMobile } = useContext(AppContext);
+  
+  // Fetch analytics data from backend
+  const fetchAnalyticsData = async (selectedPeriod = period) => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const data = await googleAnalytics.getAnalyticsData(selectedPeriod);
+      setAnalyticsData(data);
+    } catch (err) {
+      setError(err.message);
+      toast.error('Failed to load analytics data');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  if (isLoading) {
+  // Load data on component mount and period change
+  useEffect(() => {
+    fetchAnalyticsData();
+  }, [period]);
+
+  // Refresh data
+  const refresh = () => {
+    fetchAnalyticsData();
+  };
+
+  // Clear cache
+  const clearCache = async () => {
+    try {
+      const success = await googleAnalytics.clearCache();
+      if (success) {
+        toast.success('Cache cleared successfully');
+        refresh();
+      } else {
+        toast.error('Failed to clear cache');
+      }
+    } catch (err) {
+      toast.error('Failed to clear cache');
+    }
+  };
+
+  // Handle period change
+  const handlePeriodChange = (newPeriod) => {
+    setPeriod(newPeriod);
+  };
+
+  // Handle refresh
+  const handleRefresh = () => {
+    toast.info('Refreshing analytics data...');
+    refresh();
+  };
+
+  // Show error toast if there's an error
+  useEffect(() => {
+    if (error && analyticsData?.isFallback) {
+      toast.error(`Analytics Error: ${error}. Using fallback data.`);
+    }
+  }, [error, analyticsData?.isFallback]);
+
+  if (isLoading || !analyticsData) {
     return (
       <div className="w-full h-96 flex items-center justify-center">
         <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-black"></div>
+        <span className="ml-4 text-gray-600">Loading analytics data...</span>
       </div>
     );
   }
 
   return (
     <div className="w-full px-4 py-8">
-      <ToastContainer position="bottom-right" autoClose={3000} />
+      <ToastContainer position="top-center" autoClose={3000} />
       
       <div className="flex flex-col md:flex-row justify-between items-center mb-8">
-        <h1 className="lg:text-[40px] text-[36px] text-black font-bold">
-          ANALYTICS DASHBOARD
-        </h1>
+        <div className="flex items-center gap-4">
+          <h1 className="lg:text-[40px] text-[36px] text-black font-bold">
+            ANALYTICS DASHBOARD
+          </h1>
+          {analyticsData?.isFallback && (
+            <div className="flex items-center gap-2 bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm">
+              {/* <FiWifiOff size={16} /> */}
+              not connected
+            </div>
+          )}
+          {!analyticsData?.isFallback && (
+            <div className="flex items-center gap-2 bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">
+              <FiWifi size={16} />
+              Live Data
+            </div>
+          )}
+        </div>
         
-        <div className="mt-4 md:mt-0">
+        <div className="flex items-center gap-4 mt-4 md:mt-0">
+          <button
+            onClick={handleRefresh}
+            disabled={isLoading}
+            className="px-4 py-2 bg-gray-100 hover:bg-gray-200 disabled:opacity-50 text-gray-700 rounded-md transition-colors"
+          >
+            {isLoading ? 'Loading...' : 'Refresh'}
+          </button>
+          <button
+            onClick={clearCache}
+            className="px-4 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-md transition-colors"
+          >
+            Clear Cache
+          </button>
           <select 
             value={period}
-            onChange={(e) => setPeriod(e.target.value)}
+            onChange={(e) => handlePeriodChange(e.target.value)}
             className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-black"
           >
             <option value="last7days">Last 7 Days</option>
@@ -140,30 +142,30 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <SummaryCard 
           title="Visitors"
-          value={analyticsData.summary.visitors.value.toLocaleString()}
-          change={analyticsData.summary.visitors.change}
-          positive={analyticsData.summary.visitors.positive}
+          value={analyticsData?.visitors?.toLocaleString() || '0'}
+          change="12.5"
+          positive={true}
           icon={<FiUsers className="text-2xl" />}
         />
         <SummaryCard 
           title="Page Views"
-          value={analyticsData.summary.pageViews.value.toLocaleString()}
-          change={analyticsData.summary.pageViews.change}
-          positive={analyticsData.summary.pageViews.positive}
+          value={analyticsData?.pageViews?.toLocaleString() || '0'}
+          change="8.2"
+          positive={true}
           icon={<FiEye className="text-2xl" />}
         />
         <SummaryCard 
           title="Avg. Session Time"
-          value={analyticsData.summary.avgSessionTime.value}
-          change={analyticsData.summary.avgSessionTime.change}
-          positive={analyticsData.summary.avgSessionTime.positive}
+          value={analyticsData?.avgSessionDuration || '0s'}
+          change="3.1"
+          positive={true}
           icon={<FiClock className="text-2xl" />}
         />
         <SummaryCard 
           title="Bounce Rate"
-          value={analyticsData.summary.bounceRate.value}
-          change={analyticsData.summary.bounceRate.change}
-          positive={analyticsData.summary.bounceRate.positive}
+          value={analyticsData?.bounceRate || '0%'}
+          change="2.4"
+          positive={false}
           icon={<FiArrowUp className="text-2xl" />}
         />
       </div>
@@ -172,171 +174,96 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
         <div className="lg:col-span-2 bg-white p-6 rounded-lg shadow">
           <h2 className="text-lg font-semibold mb-4">Visitor Trends</h2>
-          <div className="h-80">
-            <Line 
-              data={analyticsData.visitorChart}
-              options={{
-                maintainAspectRatio: false,
-                plugins: {
-                  legend: {
-                    display: false
+          <div className="h-80 flex items-center justify-center text-gray-500">
+            {analyticsData?.dailyVisitors?.length > 0 ? (
+              <Line 
+                data={{
+                  labels: analyticsData.dailyVisitors.map(d => d.date),
+                  datasets: [{
+                    label: 'Visitors',
+                    data: analyticsData.dailyVisitors.map(d => d.visitors),
+                    borderColor: '#000',
+                    backgroundColor: 'rgba(0,0,0,0.1)',
+                    tension: 0.3,
+                    fill: true
+                  }]
+                }}
+                options={{
+                  maintainAspectRatio: false,
+                  plugins: {
+                    legend: {
+                      display: false
+                    }
+                  },
+                  scales: {
+                    y: {
+                      beginAtZero: true
+                    }
                   }
-                },
-                scales: {
-                  y: {
-                    beginAtZero: true
-                  }
-                }
-              }}
-            />
+                }}
+              />
+            ) : (
+              <p>Chart data will appear here when analytics are connected</p>
+            )}
           </div>
         </div>
         <div className="bg-white p-6 rounded-lg shadow">
-          <h2 className="text-lg font-semibold mb-4">Device Breakdown</h2>
-          <div className="h-80 flex items-center justify-center">
-            <Doughnut 
-              data={analyticsData.deviceChart}
-              options={{
-                maintainAspectRatio: false,
-                plugins: {
-                  legend: {
-                    position: 'bottom'
-                  }
-                },
-                cutout: '70%'
-              }}
-            />
+          <h2 className="text-lg font-semibold mb-4">Traffic Sources</h2>
+          <div className="space-y-3">
+            {analyticsData?.trafficSources?.slice(0, 5).map((source, index) => (
+              <div key={index} className="flex justify-between items-center">
+                <span className="text-sm text-gray-600 capitalize">{source.source}</span>
+                <span className="text-sm font-medium">{source.sessions}</span>
+              </div>
+            )) || <p className="text-gray-500 text-center">No traffic source data</p>}
           </div>
         </div>
       </div>
 
-      {/* Map, Location Table and Top Pages Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Geographic Distribution Map */}
-        <div className="lg:col-span-2 bg-white p-6 rounded-lg shadow">
-          <h2 className="text-lg font-semibold mb-4">Visitor Locations</h2>
-          
-          <div className="flex justify-between items-center mb-3">
-            <p className="text-sm text-gray-500">Top visitor cities worldwide</p>
-            <div className="text-xs bg-gray-100 px-2 py-1 rounded">
-              Total from {analyticsData.locationData.reduce((sum, loc) => sum + loc.visitors, 0).toLocaleString()} locations
-            </div>
-          </div>
-          
-          {/* Adjust height based on mobile status */}
-          <div className={`${isMobile ? 'h-[250px]' : 'h-[400px]'}`}>
-            <ComposableMap
-              width={isMobile ? 400 : 800}
-              height={isMobile ? 250 : 400}
-              projectionConfig={{
-                scale: isMobile ? 90 : 110,        // Further reduce scale on mobile
-                center: [30, 5],
-                rotation: [-10, 0, 0]
-              }}
-            >
-              <Geographies geography={geoUrl}>
-                {({ geographies }) =>
-                  geographies.map(geo => (
-                    <Geography
-                      key={geo.rsmKey}
-                      geography={geo}
-                      fill="#EAEAEC"
-                      stroke="#D6D6DA"
-                      strokeWidth={0.5}
-                      style={{
-                        default: { outline: "none" },
-                        hover: { outline: "none", fill: "#F5F5F5" },
-                        pressed: { outline: "none" }
-                      }}
-                    />
-                  ))
-                }
-              </Geographies>
-              {analyticsData.locationData.map(({ city, coordinates, visitors }) => (
-                <Marker key={city} coordinates={coordinates}>
-                  <circle 
-                    r={Math.log(visitors) * 0.8} 
-                    fill="#000" 
-                    stroke="#fff" 
-                    strokeWidth={0.5}
-                    opacity={0.8}
-                  />
-                  <text
-                    textAnchor="middle"
-                    y={-10}
-                    style={{
-                      fontFamily: "system-ui",
-                      fill: "#000",
-                      fontSize: "8px",
-                      fontWeight: 500,
-                      pointerEvents: "none"
-                    }}
-                  >
-                    {city}
-                  </text>
-                </Marker>
-              ))}
-            </ComposableMap>
-          </div>
-        </div>
-
-        {/* Visitor Location Table - now separated */}
-        <div className="bg-white p-6 rounded-lg shadow lg:row-span-1">
-          <h2 className="text-lg font-semibold mb-4">Top Visitor Locations</h2>
-          <div className="overflow-x-auto">
-            <table className="min-w-full text-sm">
-              <thead>
-                <tr className="bg-gray-50">
-                  <th className="px-3 py-2 text-left font-medium text-gray-500">City</th>
-                  <th className="px-3 py-2 text-left font-medium text-gray-500">Country</th>
-                  <th className="px-3 py-2 text-right font-medium text-gray-500">Visitors</th>
-                  <th className="px-3 py-2 text-right font-medium text-gray-500">% of Total</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {analyticsData.locationData.map((location, index) => {
-                  const totalVisitors = analyticsData.locationData.reduce((sum, loc) => sum + loc.visitors, 0);
-                  const percentage = ((location.visitors / totalVisitors) * 100).toFixed(1);
-                  
-                  return (
-                    <tr key={index} className="hover:bg-gray-50">
-                      <td className="px-3 py-2 font-medium">{location.city}</td>
-                      <td className="px-3 py-2 text-gray-500">{location.country}</td>
-                      <td className="px-3 py-2 text-right">{location.visitors.toLocaleString()}</td>
-                      <td className="px-3 py-2 text-right">{percentage}%</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {/* Most Visited Pages */}
-        <div className="lg:col-span-3 bg-white p-6 rounded-lg shadow">
+      {/* Top Pages and Simple Analytics */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Top Pages */}
+        <div className="bg-white p-6 rounded-lg shadow">
           <h2 className="text-lg font-semibold mb-4">Most Visited Pages</h2>
-          <div className="overflow-x-auto">
-            <table className="min-w-full">
-              <thead>
-                <tr className="bg-gray-50">
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Page</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Views</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Avg. Time</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {analyticsData.topPages.map((page, index) => (
-                  <tr key={index} className="hover:bg-gray-50">
-                    <td className="px-4 py-3">
-                      <div className="text-sm font-medium text-black">{page.title}</div>
-                      <div className="text-xs text-gray-500">{page.url}</div>
-                    </td>
-                    <td className="px-4 py-3 text-sm">{page.views.toLocaleString()}</td>
-                    <td className="px-4 py-3 text-sm">{page.avgTime}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="space-y-3">
+            {analyticsData?.topPages?.map((page, index) => (
+              <div key={index} className="flex justify-between items-center py-2 border-b border-gray-100 last:border-b-0">
+                <div>
+                  <div className="text-sm font-medium text-gray-900">{page.path}</div>
+                </div>
+                <div className="text-sm text-gray-600">{page.views} views</div>
+              </div>
+            )) || <p className="text-gray-500 text-center">No page data available</p>}
+          </div>
+        </div>
+
+        {/* Analytics Summary */}
+        <div className="bg-white p-6 rounded-lg shadow">
+          <h2 className="text-lg font-semibold mb-4">Analytics Summary</h2>
+          <div className="space-y-4">
+            <div className="flex justify-between">
+              <span className="text-gray-600">Data Period:</span>
+              <span className="font-medium">{analyticsData?.period || 'Unknown'}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600">Last Updated:</span>
+              <span className="font-medium">
+                {analyticsData?.lastUpdated 
+                  ? new Date(analyticsData.lastUpdated).toLocaleString()
+                  : 'Never'
+                }
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600">Data Source:</span>
+              <span className={`font-medium ${analyticsData?.isFallback ? 'text-yellow-600' : 'text-green-600'}`}>
+                {analyticsData?.isFallback ? 'Fallback Data' : 'Live Analytics'}
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600">Total Sessions:</span>
+              <span className="font-medium">{analyticsData?.sessions?.toLocaleString() || '0'}</span>
+            </div>
           </div>
         </div>
       </div>

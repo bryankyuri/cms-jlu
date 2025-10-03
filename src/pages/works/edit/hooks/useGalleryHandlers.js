@@ -54,7 +54,7 @@ export const useGalleryHandlers = (
     closeGalleryModal();
 
     toast.info("Gallery order updated", {
-      position: "bottom-right",
+      position: "top-center",
       autoClose: 2000,
     });
   };

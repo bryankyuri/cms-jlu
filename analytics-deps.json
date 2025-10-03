@@ -1,0 +1,11 @@
+{
+  "name": "google-analytics-setup",
+  "description": "Dependencies for direct Google Analytics integration",
+  "dependencies": {
+    "google-auth-library": "^9.0.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "install-analytics": "npm install google-auth-library"
+  }
+}

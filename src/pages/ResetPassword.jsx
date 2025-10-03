@@ -163,7 +163,7 @@ const ResetPassword = () => {
           <div className="mb-4">
             <ReCAPTCHA
               ref={recaptchaRef}
-              sitekey={process.env.REACT_APP_RECAPTCHA_SITE_KEY || "6LcHYpwqAAAAAGz_K7gK0t4J7A7Y7mP7W2dK9Dls"}
+              sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY || "6LcHYpwqAAAAAGz_K7gK0t4J7A7Y7mP7W2dK9Dls"}
               onChange={(token) => setErrors(prev => ({ ...prev, recaptcha: null }))}
             />
             {errors.recaptcha && (

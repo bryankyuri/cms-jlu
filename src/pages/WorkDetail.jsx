@@ -415,7 +415,7 @@ const WorkDetail = () => {
     // Basic validation
     if (!workData.title.trim()) {
       toast.error("Title is required!", {
-        position: "bottom-right",
+        position: "top-center",
         autoClose: 3000,
       });
       return;
@@ -423,7 +423,7 @@ const WorkDetail = () => {
 
     if (!workData.client.trim()) {
       toast.error("Client is required!", {
-        position: "bottom-right",
+        position: "top-center",
         autoClose: 3000,
       });
       return;
@@ -431,7 +431,7 @@ const WorkDetail = () => {
 
     if (!workData.year.trim()) {
       toast.error("Year is required!", {
-        position: "bottom-right",
+        position: "top-center",
         autoClose: 3000,
       });
       return;
@@ -445,7 +445,7 @@ const WorkDetail = () => {
 
     // Show a success message with toast
     toast.success("Work details saved successfully!", {
-      position: "bottom-right",
+      position: "top-center",
       autoClose: 3000,
       hideProgressBar: false,
       closeOnClick: true,
@@ -485,7 +485,7 @@ const WorkDetail = () => {
 
     // Show confirmation toast
     toast.info("Gallery order updated", {
-      position: "bottom-right",
+      position: "top-center",
       autoClose: 2000,
     });
   };
@@ -2055,7 +2055,7 @@ const WorkDetail = () => {
 
   return (
     <div className={styles.workDetail}>
-      <ToastContainer position="bottom-right" autoClose={3000} />
+      <ToastContainer position="top-center" autoClose={3000} />
       <div className="w-full mx-auto">
         <div
           className={`hero-banner-section w-full bg-black text-white relative ${styles.heroBanner} lg:mb-5 mb-[10px]`}

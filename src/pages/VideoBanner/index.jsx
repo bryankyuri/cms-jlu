@@ -302,7 +302,7 @@ const VideoBanner = () => {
         </h1>
         
         <div className="flex gap-2">
-          <button
+          {/* <button
             onClick={maxBannersReached ? null : openCreateModal}
             className={`px-6 py-2 rounded-md transition-colors flex items-center gap-2 ${
               maxBannersReached 
@@ -314,7 +314,7 @@ const VideoBanner = () => {
           >
             <FiPlus className="h-4 w-4" />
             Add Banner
-          </button>
+          </button> */}
 
           <button
             onClick={() => {
@@ -325,8 +325,8 @@ const VideoBanner = () => {
             }}
             className={`px-6 py-2 rounded-md transition-colors flex items-center gap-2 ${
               banners.length <= 1
-                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                : 'bg-gray-600 text-white hover:bg-gray-700'
+                ? 'bg-black text-gray-500 cursor-not-allowed'
+                : 'bg-black text-white'
             }`}
             disabled={banners.length <= 1}
             title={banners.length <= 1 ? "Need at least 2 banners to reorder" : "Reorder banners"}

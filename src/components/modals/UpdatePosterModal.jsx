@@ -10,6 +10,7 @@ const UpdatePosterModal = ({
   onClose,
   videoFile,
   onUpdateSuccess,
+  onRefetchMedia, // Add this prop for refetching media
   title = "Update Video Poster"
 }) => {
   const [selectedPoster, setSelectedPoster] = useState(null);
@@ -105,6 +106,12 @@ const UpdatePosterModal = ({
       if (result.success) {
         toast.success("Video poster updated successfully!");
         onUpdateSuccess(result.data);
+        
+        // Refetch media data if callback is provided
+        if (onRefetchMedia) {
+          onRefetchMedia();
+        }
+        
         handleClose();
       } else {
         toast.error(result.message || "Failed to update poster");

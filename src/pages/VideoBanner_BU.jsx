@@ -284,7 +284,7 @@ const VideoBanner = () => {
 
   return (
     <div className="w-full px-4 py-8">
-      <ToastContainer position="bottom-right" autoClose={3000} />
+      <ToastContainer position="top-center" autoClose={3000} />
       
       <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
         <h1 className="lg:text-[40px] text-[36px] text-black font-bold text-center w-full sm:text-left sm:w-auto">

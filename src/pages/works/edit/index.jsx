@@ -359,8 +359,8 @@ const WorkEdit = () => {
                     }
                     className="w-full p-1 focus:outline-none bg-gray-50 border rounded-md border-black"
                   >
-                    <option value="film/series">film/series</option>
-                    <option value="commercial">commercial</option>
+                    <option value="film/series">Film/Series</option>
+                    <option value="commercial">Commercial</option>
                   </select>
                 </div>
               </div>

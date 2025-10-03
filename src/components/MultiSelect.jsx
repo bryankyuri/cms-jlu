@@ -53,7 +53,7 @@ const MultiSelect = ({
     <div className={`relative ${className}`} ref={dropdownRef}>
       <div
         className={`
-          min-h-[42px] px-3 py-2 border border-gray-300 rounded-md cursor-pointer
+          min-h-[42px] px-3 py-2 border-b border-gray-300 cursor-pointer
           focus:outline-none focus:border-black transition-colors
           ${disabled ? 'bg-gray-100 cursor-not-allowed' : 'bg-white hover:border-gray-400'}
           ${isOpen ? 'border-black' : ''}

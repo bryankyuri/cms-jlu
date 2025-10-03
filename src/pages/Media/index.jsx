@@ -321,6 +321,7 @@ const Media = () => {
                   handleDeleteFile={handleDeleteFile}
                   getFileIcon={getFileIcon}
                   formatFileSize={formatFileSize}
+                  onRefetchMedia={loadMediaFiles}
                 />
               )}
             </Tab.Panel>
@@ -338,6 +339,7 @@ const Media = () => {
                   handleDeleteFile={handleDeleteFile}
                   getFileIcon={getFileIcon}
                   formatFileSize={formatFileSize}
+                  onRefetchMedia={loadMediaFiles}
                 />
               )}
             </Tab.Panel>
@@ -355,6 +357,7 @@ const Media = () => {
                   handleDeleteFile={handleDeleteFile}
                   getFileIcon={getFileIcon}
                   formatFileSize={formatFileSize}
+                  onRefetchMedia={loadMediaFiles}
                 />
               )}
             </Tab.Panel>
@@ -414,7 +417,7 @@ const Media = () => {
       />
 
       <ToastContainer
-        position="top-right"
+        position="top-center"
         autoClose={3000}
         hideProgressBar={false}
         newestOnTop={false}

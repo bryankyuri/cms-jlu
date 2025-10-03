@@ -100,13 +100,13 @@ const BannersTable = ({
                     <FiEdit className="inline mr-1" />
                     Edit
                   </button>
-                  <button
+                  {/* <button
                     onClick={() => onDeleteBanner(banner.id)}
                     className="bg-red-100 text-red-700 px-3 py-1 rounded hover:bg-red-200 transition-colors"
                   >
                     <FiX className="inline mr-1" />
                     Delete
-                  </button>
+                  </button> */}
                 </td>
               </tr>
             ))}

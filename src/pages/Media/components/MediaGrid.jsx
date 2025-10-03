@@ -17,6 +17,7 @@ const MediaGrid = ({
   getFileIcon,
   formatFileSize,
   onMediaUpdate, // Add this prop for updating media after poster change
+  onRefetchMedia, // Add this prop for refetching media data
 }) => {
   const [updatePosterModal, setUpdatePosterModal] = useState({
     isOpen: false,
@@ -93,8 +94,8 @@ const MediaGrid = ({
           <div className="text-gray-400 text-6xl mb-4">📁</div>
           <p className="text-gray-500 text-lg">No media files found</p>
           <p className="text-gray-400 text-sm">
-            Upload some files to get started
-          </p>
+          Upload some files to get started
+        </p>
         </div>
         
         {/* Update Poster Modal */}
@@ -103,12 +104,11 @@ const MediaGrid = ({
           onClose={closeUpdatePosterModal}
           videoFile={updatePosterModal.videoFile}
           onUpdateSuccess={handlePosterUpdateSuccess}
+          onRefetchMedia={onRefetchMedia}
         />
       </>
     );
-  }
-
-  // Grid view
+  }  // Grid view
   if (viewMode === "grid") {
     return (
       <>
@@ -228,6 +228,7 @@ const MediaGrid = ({
           onClose={closeUpdatePosterModal}
           videoFile={updatePosterModal.videoFile}
           onUpdateSuccess={handlePosterUpdateSuccess}
+          onRefetchMedia={onRefetchMedia}
         />
       </>
     );
@@ -372,6 +373,7 @@ const MediaGrid = ({
         onClose={closeUpdatePosterModal}
         videoFile={updatePosterModal.videoFile}
         onUpdateSuccess={handlePosterUpdateSuccess}
+        onRefetchMedia={onRefetchMedia}
       />
     </>
   );
