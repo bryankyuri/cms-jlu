@@ -1,11 +1,11 @@
 // Base API URL configuration
 const API_BASE_URL = process.env.NODE_ENV === 'production' 
-  ? 'https://staging-api.parallelstudio.asia/api'
+  ? import.meta.env.VITE_REACT_APP_API_URL
   : 'http://127.0.0.1:8000/api';
 
 // Storage base URL for media files
 const STORAGE_BASE_URL = process.env.NODE_ENV === 'production' 
-  ? 'https://staging-api.parallelstudio.asia/storage'
+  ? import.meta.env.VITE_REACT_APP_STORAGE_URL
   : 'http://127.0.0.1:8000/storage';
 
 // Convert API returned URLs to use correct base URL
