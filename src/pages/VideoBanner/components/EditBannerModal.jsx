@@ -43,10 +43,52 @@ const EditBannerModal = ({
     if (useCustomVideo) {
       // Show selected custom video from library
       if (selectedVideo) {
+        console.log('🎬 Custom video preview data:', selectedVideo);
+        
+        // Handle different video object structures
+        let videoUrl = null;
+        let thumbnailUrl = null;
+        
+        // Try different URL properties
+        if (selectedVideo.url) {
+          videoUrl = selectedVideo.url;
+        } else if (selectedVideo.src) {
+          videoUrl = selectedVideo.src;
+        } else if (selectedVideo.path) {
+          videoUrl = mediaAPI.getDirectUrl(selectedVideo.path);
+        } else if (selectedVideo.filename) {
+          videoUrl = mediaAPI.getDirectUrl(selectedVideo.filename);
+        } else if (selectedVideo.file_path) {
+          videoUrl = mediaAPI.getDirectUrl(selectedVideo.file_path);
+        }
+        
+        // Try different thumbnail properties
+        if (selectedVideo.thumbnail) {
+          thumbnailUrl = selectedVideo.thumbnail;
+        } else if (selectedVideo.poster_url) {
+          thumbnailUrl = selectedVideo.poster_url;
+        } else if (selectedVideo.poster) {
+          thumbnailUrl = selectedVideo.poster;
+        } else {
+          thumbnailUrl = videoUrl; // Use video URL as fallback
+        }
+        
+        const videoName = selectedVideo.name || 
+                         selectedVideo.original_name || 
+                         selectedVideo.filename || 
+                         'Custom Video';
+        
+        console.log('🎬 Processed video URLs:', { videoUrl, thumbnailUrl, videoName });
+        
+        if (!videoUrl) {
+          console.error('❌ No video URL found in selectedVideo object:', selectedVideo);
+          return null;
+        }
+        
         return {
-          url: mediaAPI.getDirectUrl(selectedVideo.path),
-          thumbnail: selectedVideo.poster_url || mediaAPI.getDirectUrl(selectedVideo.path),
-          name: selectedVideo.original_name || selectedVideo.filename || 'Custom Video',
+          url: videoUrl,
+          thumbnail: thumbnailUrl,
+          name: videoName,
           isDefault: false
         };
       }
@@ -164,15 +206,42 @@ const EditBannerModal = ({
                   <h5 className="font-medium mb-2">Preview</h5>
                   <div className="aspect-video bg-gray-100 rounded overflow-hidden">
                     {previewVideo ? (
-                      <video
-                        src={previewVideo.url}
-                        poster={previewVideo.thumbnail}
-                        controls
-                        className="w-full h-full object-cover"
-                        preload="metadata"
-                      >
-                        Your browser does not support the video tag.
-                      </video>
+                      previewVideo.url ? (
+                        <div>
+                          {console.log('🎥 Rendering video preview:', previewVideo)}
+                          <video
+                            src={previewVideo.url}
+                            poster={previewVideo.thumbnail}
+                            controls
+                            className="w-full h-full object-cover"
+                            preload="metadata"
+                            onError={(e) => {
+                              console.error('❌ Video error:', e.target.error);
+                              console.error('❌ Video src:', e.target.src);
+                            }}
+                            onLoadStart={() => console.log('📤 Video load started:', previewVideo.url)}
+                            onCanPlay={() => console.log('✅ Video can play:', previewVideo.url)}
+                          >
+                            Your browser does not support the video tag.
+                          </video>
+                        </div>
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-red-50">
+                          <div className="text-center">
+                            <div className="mb-2">
+                              <svg className="w-16 h-16 text-red-400 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.232 15.5c-.77.833.192 2.5 1.732 2.5z" />
+                              </svg>
+                            </div>
+                            <p className="text-red-600 text-sm font-medium">
+                              Video URL is undefined
+                            </p>
+                            <p className="text-red-500 text-xs mt-1">
+                              Please select a different video
+                            </p>
+                          </div>
+                        </div>
+                      )
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
                         <div className="text-center">

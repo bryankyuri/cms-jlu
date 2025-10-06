@@ -19,6 +19,7 @@ const Dashboard = () => {
   const [analyticsData, setAnalyticsData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const { isMobile } = useContext(AppContext);
   
   // Fetch analytics data from backend
@@ -29,17 +30,34 @@ const Dashboard = () => {
       const data = await googleAnalytics.getAnalyticsData(selectedPeriod);
       setAnalyticsData(data);
     } catch (err) {
+      console.error('Analytics fetch error:', err);
       setError(err.message);
-      toast.error('Failed to load analytics data');
+      
+      if (err.message.includes('Authentication required')) {
+        toast.error('Please log in to view analytics data');
+      } else {
+        toast.error('Failed to load analytics data');
+      }
     } finally {
       setIsLoading(false);
     }
   };
 
+  // Check authentication status
+  useEffect(() => {
+    const token = localStorage.getItem('cms_auth_token');
+    setIsAuthenticated(!!token);
+  }, []);
+
   // Load data on component mount and period change
   useEffect(() => {
-    fetchAnalyticsData();
-  }, [period]);
+    if (isAuthenticated) {
+      fetchAnalyticsData();
+    } else {
+      setIsLoading(false);
+      setError('Authentication required');
+    }
+  }, [period, isAuthenticated]);
 
   // Refresh data
   const refresh = () => {
@@ -79,11 +97,39 @@ const Dashboard = () => {
     }
   }, [error, analyticsData?.isFallback]);
 
-  if (isLoading || !analyticsData) {
+  if (isLoading) {
     return (
       <div className="w-full h-96 flex items-center justify-center">
         <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-black"></div>
         <span className="ml-4 text-gray-600">Loading analytics data...</span>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div className="w-full h-96 flex flex-col items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">Authentication Required</h2>
+          <p className="text-gray-600 mb-6">Please log in to view analytics data.</p>
+          <button
+            onClick={() => window.location.href = '/login'}
+            className="px-6 py-3 bg-black text-white rounded-md hover:bg-gray-800 transition-colors"
+          >
+            Go to Login
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!analyticsData) {
+    return (
+      <div className="w-full h-96 flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-xl font-bold text-gray-800 mb-2">No Analytics Data</h2>
+          <p className="text-gray-600">Unable to load analytics data at this time.</p>
+        </div>
       </div>
     );
   }
@@ -146,6 +192,7 @@ const Dashboard = () => {
           change="12.5"
           positive={true}
           icon={<FiUsers className="text-2xl" />}
+          showComparison={!analyticsData?.isFallback && analyticsData?.visitors > 0}
         />
         <SummaryCard 
           title="Page Views"
@@ -153,6 +200,7 @@ const Dashboard = () => {
           change="8.2"
           positive={true}
           icon={<FiEye className="text-2xl" />}
+          showComparison={!analyticsData?.isFallback && analyticsData?.pageViews > 0}
         />
         <SummaryCard 
           title="Avg. Session Time"
@@ -160,6 +208,7 @@ const Dashboard = () => {
           change="3.1"
           positive={true}
           icon={<FiClock className="text-2xl" />}
+          showComparison={!analyticsData?.isFallback && analyticsData?.avgSessionDuration !== '0s'}
         />
         <SummaryCard 
           title="Bounce Rate"
@@ -167,6 +216,7 @@ const Dashboard = () => {
           change="2.4"
           positive={false}
           icon={<FiArrowUp className="text-2xl" />}
+          showComparison={!analyticsData?.isFallback && analyticsData?.bounceRate !== '0%'}
         />
       </div>
 
@@ -272,7 +322,7 @@ const Dashboard = () => {
 };
 
 // Summary card component for analytics metrics
-const SummaryCard = ({ title, value, change, positive, icon }) => {
+const SummaryCard = ({ title, value, change, positive, icon, showComparison = true }) => {
   return (
     <div className="bg-white p-6 rounded-lg shadow">
       <div className="flex justify-between">
@@ -284,15 +334,17 @@ const SummaryCard = ({ title, value, change, positive, icon }) => {
           {icon}
         </div>
       </div>
-      <div className={`flex items-center mt-4 text-sm ${positive ? 'text-green-600' : 'text-red-600'}`}>
-        {positive ? (
-          <FiArrowUp className="mr-1" />
-        ) : (
-          <FiArrowDown className="mr-1" />
-        )}
-        <span>{change}%</span>
-        <span className="ml-1 text-gray-500">vs previous period</span>
-      </div>
+      {showComparison && (
+        <div className={`flex items-center mt-4 text-sm ${positive ? 'text-green-600' : 'text-red-600'}`}>
+          {positive ? (
+            <FiArrowUp className="mr-1" />
+          ) : (
+            <FiArrowDown className="mr-1" />
+          )}
+          <span>{change}%</span>
+          <span className="ml-1 text-gray-500">vs previous period</span>
+        </div>
+      )}
     </div>
   );
 };

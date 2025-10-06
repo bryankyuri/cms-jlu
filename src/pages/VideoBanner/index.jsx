@@ -142,6 +142,7 @@ const VideoBanner = () => {
     openVideoLibrary();
     await initializeVideoLibrary();
   };  const handleVideoSelect = (video) => {
+    console.log('🎬 Video selected in main component:', video);
     handleVideoSelection(video, setSelectedVideo, () => closeVideoLibrary());
   };
 
@@ -414,6 +415,7 @@ const VideoBanner = () => {
         videoLibrary={videoLibrary}
         onVideoSelect={handleVideoSelect}
         onVideoUpload={handleVideoUploadWrapper}
+        onRefreshLibrary={loadVideosWithFilters}
         uploadingVideo={uploadingVideo}
         uploadProgress={uploadProgress}
         // Pagination props

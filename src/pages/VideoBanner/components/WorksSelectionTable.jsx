@@ -49,7 +49,7 @@ const WorksSelectionTable = ({
             placeholder="Search by title, client, or description..."
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-md focus:outline-none focus:border-black"
+            className="pl-10 pr-4 py-2 w-full border-b border-gray-300 focus:outline-none focus:border-black"
           />
           {searchQuery && (
             <button
@@ -69,7 +69,7 @@ const WorksSelectionTable = ({
           <select
             value={perPage}
             onChange={(e) => onPerPageChange(parseInt(e.target.value))}
-            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-black"
+            className="px-3 py-[11px] border-b border-gray-300 focus:outline-none focus:border-black"
           >
             <option value={5}>5 per page</option>
             <option value={10}>10 per page</option>
@@ -81,7 +81,7 @@ const WorksSelectionTable = ({
           <select
             value={categoryFilter}
             onChange={(e) => onCategoryChange(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-black"
+            className="px-3 py-[11px] border-b border-gray-300 focus:outline-none focus:border-black"
           >
             <option value="all">All Categories</option>
             <option value="film/series">Film/Series</option>

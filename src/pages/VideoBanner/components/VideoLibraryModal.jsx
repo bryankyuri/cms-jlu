@@ -1,14 +1,17 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { FiX, FiUpload, FiVideo, FiCheck, FiSearch, FiChevronLeft, FiChevronRight, FiArrowUp, FiArrowDown } from 'react-icons/fi';
+import VideoUploadModal from '../../../components/modals/VideoUploadModal';
 
 const VideoLibraryModal = ({
   isOpen,
   onClose,
   videoLibrary,
   onVideoSelect,
-  onVideoUpload,
+  onVideoUpload, // This is for the old direct upload method
   uploadingVideo,
   uploadProgress,
+  // Add new prop for refreshing video library
+  onRefreshLibrary,
   // Pagination props
   currentPage = 1,
   totalPages = 1,
@@ -27,7 +30,19 @@ const VideoLibraryModal = ({
   // Loading state
   loading = false
 }) => {
+  // State for VideoUploadModal
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+
   if (!isOpen) return null;
+
+  const handleUploadSuccess = () => {
+    // Close upload modal
+    setIsUploadModalOpen(false);
+    // Refresh the video library
+    if (onRefreshLibrary) {
+      onRefreshLibrary();
+    }
+  };
 
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
@@ -56,16 +71,13 @@ const VideoLibraryModal = ({
         <div className="p-4 border-b border-gray-200">
           <div className="flex items-center justify-between">
             <h4 className="text-md font-medium">Upload New Video</h4>
-            <label className="bg-black text-white px-4 py-2 rounded-md hover:bg-gray-800 transition-colors cursor-pointer inline-flex items-center gap-2">
+            <button
+              onClick={() => setIsUploadModalOpen(true)}
+              className="bg-black text-white px-4 py-2 rounded-md hover:bg-gray-800 transition-colors inline-flex items-center gap-2"
+            >
               <FiUpload className="h-4 w-4" />
               Upload Video
-              <input
-                type="file"
-                accept="video/*"
-                className="hidden"
-                onChange={handleFileUpload}
-              />
-            </label>
+            </button>
           </div>
           
           {uploadingVideo && (
@@ -231,6 +243,14 @@ const VideoLibraryModal = ({
           </button>
         </div>
       </div>
+
+      {/* Video Upload Modal */}
+      <VideoUploadModal
+        isOpen={isUploadModalOpen}
+        onClose={() => setIsUploadModalOpen(false)}
+        onUploadSuccess={handleUploadSuccess}
+        title="Upload Video to Library"
+      />
     </div>
   );
 };

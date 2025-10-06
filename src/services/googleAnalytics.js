@@ -8,7 +8,7 @@ class GoogleAnalyticsService {
 
   // Get authentication token from localStorage
   getAuthToken() {
-    return localStorage.getItem('token');
+    return localStorage.getItem('cms_auth_token');
   }
 
   // Get analytics data from Laravel backend
