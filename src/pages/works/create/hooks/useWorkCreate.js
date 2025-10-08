@@ -56,6 +56,9 @@ export const useWorkCreate = () => {
   const [heroBannerButtonBg, setHeroBannerButtonBg] = useState("bg-black bg-opacity-70");
   const [isHeroBannerVisible, setIsHeroBannerVisible] = useState(true);
 
+  // Video player tab state
+  const [activeVideoTab, setActiveVideoTab] = useState("uploaded");
+
   // Work data state
   const [workData, setWorkData] = useState({
     heroBannerImage: "",
@@ -67,6 +70,9 @@ export const useWorkCreate = () => {
     description: "",
     videoProjectSrc: "",
     videoProjectPosterUrl: "",
+    videoVimeoUrl: "",
+    videoYoutubeUrl: "",
+    videoCloudflareUrl: "",
     credits: [
       { role: "Director", name: ["Your Name"] },
       { role: "Producer", name: ["Your Name"] },
@@ -81,6 +87,19 @@ export const useWorkCreate = () => {
   });
 
   const [tempWorkData, setTempWorkData] = useState();
+
+  // Auto-select first available video tab
+  useEffect(() => {
+    if (workData.videoProjectSrc) {
+      setActiveVideoTab("uploaded");
+    } else if (workData.videoVimeoUrl) {
+      setActiveVideoTab("vimeo");
+    } else if (workData.videoYoutubeUrl) {
+      setActiveVideoTab("youtube");
+    } else if (workData.videoCloudflareUrl) {
+      setActiveVideoTab("cloudflare");
+    }
+  }, [workData.videoProjectSrc, workData.videoVimeoUrl, workData.videoYoutubeUrl, workData.videoCloudflareUrl]);
 
   // Animation function for smooth slider transitions
   const animateSlider = (targetPosition) => {
@@ -334,6 +353,8 @@ export const useWorkCreate = () => {
     setIsVideoUploadModalOpen,
     heroBannerButtonBg,
     isHeroBannerVisible,
+    activeVideoTab,
+    setActiveVideoTab,
     workData,
     setWorkData,
     tempWorkData,

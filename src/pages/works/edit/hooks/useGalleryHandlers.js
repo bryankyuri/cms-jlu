@@ -29,7 +29,9 @@ export const useGalleryHandlers = (
   setRemoveItemIndex,
   fetchAvailableImages,
   // Upload modal state
-  setIsImageUploadModalOpen
+  setIsImageUploadModalOpen,
+  // Add editingGalleryItem to the parameters
+  editingGalleryItem
 ) => {
   // Gallery editing functions
   const openGalleryModal = () => {
@@ -149,8 +151,10 @@ export const useGalleryHandlers = (
 
   // Update existing gallery item
   const updateGalleryItem = () => {
-    const editingItem = tempImagesOrder.find((_, index) => index === tempImagesOrder.findIndex(item => item.id === tempImagesOrder[0].id)); // This needs to be passed from the component
-    if (!editingItem) return;
+    if (!editingGalleryItem) {
+      console.error("No editing gallery item found");
+      return;
+    }
 
     const currentType = IMAGE_TYPES.find(
       (type) => type.value === selectedImageType
@@ -164,7 +168,7 @@ export const useGalleryHandlers = (
     }
 
     const updatedItem = {
-      ...editingItem,
+      ...editingGalleryItem,
       type: selectedImageType,
       imageUrl:
         currentType.imageCount === 1
@@ -172,9 +176,9 @@ export const useGalleryHandlers = (
           : selectedImages.map((img) => mediaAPI.getDirectUrl(img.path)),
     };
 
+    // Update the item at the correct index
     const newTempOrder = [...tempImagesOrder];
-    const editingIndex = newTempOrder.findIndex(item => item.id === editingItem.id);
-    newTempOrder[editingIndex] = updatedItem;
+    newTempOrder[editingGalleryItem.index] = updatedItem;
     setTempImagesOrder(newTempOrder);
 
     closeAddGalleryModal();

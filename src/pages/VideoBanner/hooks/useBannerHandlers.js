@@ -55,8 +55,18 @@ export const useBannerHandlers = () => {
         work_id: selectedWork.id,
         video_url: selectedVideo.url,
         video_thumbnail: selectedVideo.thumbnail,
-        is_custom_video: !selectedVideo.isDefault,
+        is_custom_video: selectedVideo.type !== 'work_default' && !selectedVideo.isDefault,
       };
+
+      console.log('🔄 Updating banner with data:', { 
+        bannerId: banner.id, 
+        bannerData,
+        selectedVideo: {
+          type: selectedVideo.type,
+          isDefault: selectedVideo.isDefault,
+          url: selectedVideo.url
+        }
+      });
 
       // Call API to update banner
       const response = await videoBannerAPI.update(banner.id, bannerData);

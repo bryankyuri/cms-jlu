@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { FiX, FiVideo } from 'react-icons/fi';
+import { Stream } from "@cloudflare/stream-react";
 import WorksSelectionTable from './WorksSelectionTable';
 import { mediaAPI } from '../../../api/index';
 
@@ -34,13 +35,99 @@ const EditBannerModal = ({
   onSave,
   loading = false
 }) => {
+  const [cloudflareVideoUrl, setCloudflareVideoUrl] = useState('');
+  const [videoSourceType, setVideoSourceType] = useState('default'); // 'default', 'custom', 'cloudflare'
+
+  // Helper function to extract video ID from Cloudflare Stream URL
+  const getCloudflareVideoId = (url) => {
+    if (!url) return "";
+
+    // Handle different Cloudflare Stream URL formats
+    // Format 1: https://customer-domain.cloudflarestream.com/videoId/manifest/video.m3u8
+    // Format 2: https://customer-domain.cloudflarestream.com/videoId
+    // Format 3: https://iframe.videodelivery.net/videoId
+    // Format 4: https://watch.videodelivery.net/videoId
+
+    try {
+      // Remove query parameters first
+      const cleanUrl = url.split("?")[0];
+
+      // Extract video ID from different URL patterns
+      if (cleanUrl.includes("iframe.videodelivery.net") || cleanUrl.includes("watch.videodelivery.net")) {
+        return cleanUrl.split("/").pop();
+      } else if (cleanUrl.includes("cloudflarestream.com")) {
+        const parts = cleanUrl.split("/");
+        const videoIdIndex =
+          parts.findIndex((part) => part.includes("cloudflarestream.com")) + 1;
+        return parts[videoIdIndex] || cleanUrl.split("/").pop();
+      } else {
+        // Fallback: assume the last part is the video ID
+        return cleanUrl.split("/").pop();
+      }
+    } catch (error) {
+      console.error("Error extracting Cloudflare video ID:", error);
+      return url;
+    }
+  };
+
   if (!isOpen || !currentBanner) return null;
 
   const work = publishedWorks.find(w => w.id === currentBanner.work_id);
+
+  // CSS styles for Stream component
+  const streamStyles = `
+    .stream-preview-container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+    
+    .stream-preview-container > div {
+      position: absolute !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
+      padding: 0 !important;
+      margin: 0 !important;
+    }
+    
+    [data-cloudflare-stream] {
+      position: absolute !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      border: none !important;
+    }
+    
+    [data-cloudflare-stream] iframe {
+      position: absolute !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      border: none !important;
+    }
+  `;
   
   // Determine which video to display in preview (temp state, not current banner)
   const getPreviewVideo = () => {
-    if (useCustomVideo) {
+    if (videoSourceType === 'cloudflare' && cloudflareVideoUrl) {
+      // Show Cloudflare embed video
+      return {
+        url: cloudflareVideoUrl,
+        thumbnail: null, // Cloudflare embeds don't have separate thumbnails
+        name: 'Cloudflare Stream Video',
+        isDefault: false,
+        isCloudflare: true
+      };
+    } else if (videoSourceType === 'custom' || useCustomVideo) {
       // Show selected custom video from library
       if (selectedVideo) {
         console.log('🎬 Custom video preview data:', selectedVideo);
@@ -122,13 +209,14 @@ const EditBannerModal = ({
       return;
     }
 
-    onSave(workToUse, previewVideo, useCustomVideo);
+    onSave(workToUse, previewVideo, videoSourceType === 'custom' || useCustomVideo);
   };
 
   const canSave = previewVideo && (selectedWork || work);
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <style>{streamStyles}</style>
       <div className="bg-white rounded-lg shadow-xl w-full h-full flex flex-col">
         <div className="p-4 border-b border-gray-200 flex justify-between items-center">
           <h3 className="text-lg font-medium">
@@ -207,23 +295,40 @@ const EditBannerModal = ({
                   <div className="aspect-video bg-gray-100 rounded overflow-hidden">
                     {previewVideo ? (
                       previewVideo.url ? (
-                        <div>
+                        <div className='w-full h-full'>
                           {console.log('🎥 Rendering video preview:', previewVideo)}
-                          <video
-                            src={previewVideo.url}
-                            poster={previewVideo.thumbnail}
-                            controls
-                            className="w-full h-full object-cover"
-                            preload="metadata"
-                            onError={(e) => {
-                              console.error('❌ Video error:', e.target.error);
-                              console.error('❌ Video src:', e.target.src);
-                            }}
-                            onLoadStart={() => console.log('📤 Video load started:', previewVideo.url)}
-                            onCanPlay={() => console.log('✅ Video can play:', previewVideo.url)}
-                          >
-                            Your browser does not support the video tag.
-                          </video>
+                          {previewVideo.isCloudflare ? (
+                            <div className="stream-preview-container">
+                              <Stream
+                                src={getCloudflareVideoId(previewVideo.url)}
+                                controls={true}
+                                autoplay={false}
+                                loop={false}
+                                muted={true}
+                                poster={previewVideo.thumbnail}
+                                style={{
+                                  width: "100%",
+                                  height: "100%"
+                                }}
+                              />
+                            </div>
+                          ) : (
+                            <video
+                              src={previewVideo.url}
+                              poster={previewVideo.thumbnail}
+                              controls
+                              className="w-full h-full object-cover"
+                              preload="metadata"
+                              onError={(e) => {
+                                console.error('❌ Video error:', e.target.error);
+                                console.error('❌ Video src:', e.target.src);
+                              }}
+                              onLoadStart={() => console.log('📤 Video load started:', previewVideo.url)}
+                              onCanPlay={() => console.log('✅ Video can play:', previewVideo.url)}
+                            >
+                              Your browser does not support the video tag.
+                            </video>
+                          )}
                         </div>
                       ) : (
                         <div className="w-full h-full flex items-center justify-center bg-red-50">
@@ -261,7 +366,11 @@ const EditBannerModal = ({
                     <div className="mt-2 p-3 bg-gray-50 rounded">
                       <p className="font-medium text-sm">{previewVideo.name}</p>
                       <p className="text-xs text-gray-500">
-                        {previewVideo.isDefault ? 'Default work video' : 'Custom video from library'}
+                        {previewVideo.isDefault 
+                          ? 'Default work video' 
+                          : previewVideo.isCloudflare 
+                            ? 'Cloudflare Stream embed' 
+                            : 'Custom video from library'}
                       </p>
                     </div>
                   )}
@@ -274,18 +383,19 @@ const EditBannerModal = ({
                 
                 {/* Default Video Option */}
                 <div className={`border-2 rounded-lg p-4 mb-3 cursor-pointer ${
-                  !useCustomVideo ? 'border-black bg-gray-50' : 'border-gray-200'
+                  videoSourceType === 'default' ? 'border-black bg-gray-50' : 'border-gray-200'
                 }`}
                 onClick={() => {
-                  console.log('🎯 Switching to default video...', { useCustomVideo, selectedWork, currentBanner });
+                  console.log('🎯 Switching to default video...', { videoSourceType, selectedWork, currentBanner });
+                  setVideoSourceType('default');
                   onCustomVideoToggle(false, selectedWork || publishedWorks.find(w => w.id === currentBanner.work_id));
                 }}
                 >
                   <div className="flex items-center mb-2">
                     <div className={`w-4 h-4 rounded-full border-2 mr-2 ${
-                      !useCustomVideo ? 'border-black bg-black' : 'border-gray-300'
+                      videoSourceType === 'default' ? 'border-black bg-black' : 'border-gray-300'
                     }`}>
-                      {!useCustomVideo && <div className="w-2 h-2 bg-white rounded-full mx-auto mt-0.5"></div>}
+                      {videoSourceType === 'default' && <div className="w-2 h-2 bg-white rounded-full mx-auto mt-0.5"></div>}
                     </div>
                     <span className="font-medium">Use Work's Default Video</span>
                   </div>
@@ -300,19 +410,20 @@ const EditBannerModal = ({
                 </div>
 
                 {/* Custom Video Option */}
-                <div className={`border-2 rounded-lg p-4 cursor-pointer ${
-                  useCustomVideo ? 'border-black bg-gray-50' : 'border-gray-200'
+                <div className={`border-2 rounded-lg p-4 mb-3 cursor-pointer ${
+                  videoSourceType === 'custom' ? 'border-black bg-gray-50' : 'border-gray-200'
                 }`}
                 onClick={() => {
-                  console.log('🎯 Switching to custom video...', { useCustomVideo });
+                  console.log('🎯 Switching to custom video...', { videoSourceType });
+                  setVideoSourceType('custom');
                   onCustomVideoToggle(true);
                 }}
                 >
                   <div className="flex items-center mb-2">
                     <div className={`w-4 h-4 rounded-full border-2 mr-2 ${
-                      useCustomVideo ? 'border-black bg-black' : 'border-gray-300'
+                      videoSourceType === 'custom' ? 'border-black bg-black' : 'border-gray-300'
                     }`}>
-                      {useCustomVideo && <div className="w-2 h-2 bg-white rounded-full mx-auto mt-0.5"></div>}
+                      {videoSourceType === 'custom' && <div className="w-2 h-2 bg-white rounded-full mx-auto mt-0.5"></div>}
                     </div>
                     <span className="font-medium">Use Custom Video</span>
                   </div>
@@ -320,7 +431,7 @@ const EditBannerModal = ({
                     Select from video library or upload new video
                   </p>
                   
-                  {useCustomVideo && (
+                  {videoSourceType === 'custom' && (
                     <div className="ml-6">
                       <button
                         onClick={(e) => {
@@ -332,6 +443,48 @@ const EditBannerModal = ({
                         <FiVideo className="inline mr-2" />
                         Select from Library
                       </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Cloudflare Video Option */}
+                <div className={`border-2 rounded-lg p-4 cursor-pointer ${
+                  videoSourceType === 'cloudflare' ? 'border-black bg-gray-50' : 'border-gray-200'
+                }`}
+                onClick={() => {
+                  console.log('🎯 Switching to Cloudflare video...', { videoSourceType });
+                  setVideoSourceType('cloudflare');
+                  onCustomVideoToggle(false);
+                }}
+                >
+                  <div className="flex items-center mb-2">
+                    <div className={`w-4 h-4 rounded-full border-2 mr-2 ${
+                      videoSourceType === 'cloudflare' ? 'border-black bg-black' : 'border-gray-300'
+                    }`}>
+                      {videoSourceType === 'cloudflare' && <div className="w-2 h-2 bg-white rounded-full mx-auto mt-0.5"></div>}
+                    </div>
+                    <span className="font-medium">Use Cloudflare Stream Video</span>
+                  </div>
+                  <p className="text-sm text-gray-600 ml-6 mb-3">
+                    Enter Cloudflare Stream embed URL
+                  </p>
+                  
+                  {videoSourceType === 'cloudflare' && (
+                    <div className="ml-6">
+                      <input
+                        type="url"
+                        value={cloudflareVideoUrl}
+                        onChange={(e) => {
+                          e.stopPropagation();
+                          setCloudflareVideoUrl(e.target.value);
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                        placeholder="https://watch.videodelivery.net/your-video-id"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:border-black"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        Enter the full Cloudflare Stream embed URL
+                      </p>
                     </div>
                   )}
                 </div>
@@ -352,7 +505,11 @@ const EditBannerModal = ({
                   <div>
                     <span className="font-medium text-blue-700">New:</span>
                     <p className="text-blue-600">
-                      {previewVideo.isDefault ? `Default Video from ${(selectedWork || work)?.title}` : 'Custom Video from Library'}
+                      {previewVideo.isDefault 
+                        ? `Default Video from ${(selectedWork || work)?.title}` 
+                        : previewVideo.isCloudflare 
+                          ? 'Cloudflare Stream Video'
+                          : 'Custom Video from Library'}
                     </p>
                   </div>
                 </div>

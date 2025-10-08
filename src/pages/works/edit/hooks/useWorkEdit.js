@@ -62,6 +62,9 @@ export const useWorkEdit = () => {
   const [heroBannerButtonBg, setHeroBannerButtonBg] = useState("bg-black bg-opacity-70");
   const [isHeroBannerVisible, setIsHeroBannerVisible] = useState(true);
 
+  // Video player tab state
+  const [activeVideoTab, setActiveVideoTab] = useState("uploaded");
+
   // Work data state
   const [workData, setWorkData] = useState({
     heroBannerImage: "",
@@ -71,8 +74,12 @@ export const useWorkEdit = () => {
     year: new Date().getFullYear().toString(),
     tag: [],
     description: "",
+    slug: "",
     videoProjectSrc: "",
     videoProjectPosterUrl: "",
+    videoVimeoUrl: "",
+    videoYoutubeUrl: "",
+    videoCloudflareUrl: "",
     credits: [
       { role: "Director", name: ["Your Name"] },
       { role: "Producer", name: ["Your Name"] },
@@ -87,6 +94,19 @@ export const useWorkEdit = () => {
   });
 
   const [tempWorkData, setTempWorkData] = useState();
+
+  // Auto-select first available video tab
+  useEffect(() => {
+    if (workData.videoProjectSrc) {
+      setActiveVideoTab("uploaded");
+    } else if (workData.videoVimeoUrl) {
+      setActiveVideoTab("vimeo");
+    } else if (workData.videoYoutubeUrl) {
+      setActiveVideoTab("youtube");
+    } else if (workData.videoCloudflareUrl) {
+      setActiveVideoTab("cloudflare");
+    }
+  }, [workData.videoProjectSrc, workData.videoVimeoUrl, workData.videoYoutubeUrl, workData.videoCloudflareUrl]);
 
   // Animation function for smooth slider transitions
   const animateSlider = (targetPosition) => {
@@ -294,8 +314,12 @@ export const useWorkEdit = () => {
       year: apiData.year || new Date().getFullYear().toString(),
       tag: apiData.tags || [],
       description: apiData.description || "",
+      slug: apiData.slug || "",
       videoProjectSrc: apiData.video_project_src || "",
       videoProjectPosterUrl: apiData.video_project_poster || "",
+      videoVimeoUrl: apiData.video_vimeo_url || "",
+      videoYoutubeUrl: apiData.video_youtube_url || "",
+      videoCloudflareUrl: apiData.video_cloudflare_url || "",
       credits: apiData.credits && apiData.credits.length > 0 
         ? apiData.credits.map(credit => ({
             role: credit.role || "",
@@ -415,6 +439,8 @@ export const useWorkEdit = () => {
     setIsVideoUploadModalOpen,
     heroBannerButtonBg,
     isHeroBannerVisible,
+    activeVideoTab,
+    setActiveVideoTab,
     workData,
     setWorkData,
     tempWorkData,

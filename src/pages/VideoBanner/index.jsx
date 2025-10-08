@@ -102,7 +102,8 @@ const VideoBanner = () => {
   const {
     handleCreateBanner,
     handleDeleteBanner,
-    handleBannerVideoUpdate
+    handleBannerVideoUpdate,
+    handleEditBanner: handleEditBannerAPI
   } = useBannerHandlers();
 
   // Enhanced handlers that use state setters
@@ -190,37 +191,22 @@ const VideoBanner = () => {
     );
   };
 
-  // Enhanced handler for edit modal that handles work changes too
-  const handleEditBanner = (selectedWorkForEdit, selectedVideoForEdit, useCustomVideoForEdit) => {
+  // Enhanced handler for edit modal that calls the API
+  const handleEditBanner = async (selectedWorkForEdit, selectedVideoForEdit, useCustomVideoForEdit) => {
     if (!selectedVideoForEdit) {
       toast.error("Please select a video");
       return;
     }
 
     try {
-      // Create the updated banner object
-      const updatedBanner = {
-        ...currentBanner,
-        // Update work if changed
-        work_id: selectedWorkForEdit.id,
-        work_title: selectedWorkForEdit.title,
-        work_client: selectedWorkForEdit.client,
-        work_categories: Array.isArray(selectedWorkForEdit.tags) ? selectedWorkForEdit.tags : [],
-        // Update video
-        video_url: selectedVideoForEdit.url,
-        video_thumbnail: selectedVideoForEdit.thumbnail,
-        is_custom_video: useCustomVideoForEdit,
-        updated_at: new Date().toISOString()
-      };
-
-      setBanners(prev => 
-        prev.map(banner => 
-          banner.id === currentBanner.id ? updatedBanner : banner
-        )
+      // Call the API function from useBannerHandlers
+      await handleEditBannerAPI(
+        currentBanner,
+        selectedWorkForEdit,
+        selectedVideoForEdit,
+        setBanners,
+        closeEditModal
       );
-      
-      toast.success("Banner updated successfully");
-      closeEditModal();
       
       // Reset selections
       setSelectedWork(null);

@@ -94,6 +94,8 @@ const WorkCreate = () => {
     isSaving,
     heroBannerButtonBg,
     isHeroBannerVisible,
+    activeVideoTab,
+    setActiveVideoTab,
     // Functions
     animateSlider,
     handleImageClick,
@@ -134,7 +136,8 @@ const WorkCreate = () => {
     workCreateState.setIsRemoveConfirmOpen,
     workCreateState.setRemoveItemIndex,
     workCreateState.fetchAvailableImages,
-    workCreateState.setIsImageUploadModalOpen
+    workCreateState.setIsImageUploadModalOpen,
+    editingGalleryItem
   );
 
   const modalHandlers = useModalHandlers(
@@ -599,23 +602,58 @@ const WorkCreate = () => {
               <label className="text-lg font-medium text-black mb-2 block">
                 Project Video <span className="text-red-700 ml-1"> *</span>
               </label>
-              <div className="flex items-center gap-4">
-                <button
-                  onClick={modalHandlers.openVideoProjectModal}
-                  className="bg-black text-white px-4 py-2 rounded flex items-center hover:bg-gray-800 transition-colors"
-                >
-                  <FiUpload className="mr-2" size={16} />
-                  Select Video from Gallery
-                </button>
-                {workData.videoProjectSrc && (
-                  <div className="flex items-center text-sm text-gray-600">
-                    <span>Current: </span>
-                    <span className="ml-1 max-w-xs truncate">
-                      {workData.videoProjectSrc.split("/").pop() ||
-                        "Selected video"}
-                    </span>
+
+              <div className="flex flex-col gap-4">
+                <div className="flex items-center gap-4">
+                  <button
+                    onClick={modalHandlers.openVideoProjectModal}
+                    className="bg-black text-white px-4 py-2 rounded flex items-center hover:bg-gray-800 transition-colors"
+                  >
+                    <FiUpload className="mr-2" size={16} />
+                    Select Video from Gallery
+                  </button>
+                  {workData.videoProjectSrc && (
+                    <div className="flex items-center text-sm text-gray-600">
+                      <span>Current: </span>
+                      <span className="ml-1 max-w-xs truncate">
+                        {workData.videoProjectSrc.split("/").pop() ||
+                          "Selected video"}
+                      </span>
+                    </div>
+                  )}
+                </div>
+                <div className="flex flex-col md:flex-row gap-4 mt-2">
+                  <div className="flex-1">
+                    <label className="block text-xs font-medium text-gray-700 mb-1">Vimeo Embed URL (optional)</label>
+                    <input
+                      type="url"
+                      value={workData.videoVimeoUrl}
+                      onChange={e => workCreateHandlers.handleFieldChange("videoVimeoUrl", e.target.value)}
+                      placeholder="https://vimeo.com/yourvideo"
+                      className="w-full px-3 py-2 border rounded-md border-gray-300 focus:outline-none focus:border-black text-sm"
+                    />
                   </div>
-                )}
+                  <div className="flex-1">
+                    <label className="block text-xs font-medium text-gray-700 mb-1">YouTube URL (optional)</label>
+                    <input
+                      type="url"
+                      value={workData.videoYoutubeUrl}
+                      onChange={e => workCreateHandlers.handleFieldChange("videoYoutubeUrl", e.target.value)}
+                      placeholder="https://youtube.com/watch?v=yourvideo"
+                      className="w-full px-3 py-2 border rounded-md border-gray-300 focus:outline-none focus:border-black text-sm"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <label className="block text-xs font-medium text-gray-700 mb-1">Cloudflare Stream Embed URL (optional)</label>
+                    <input
+                      type="url"
+                      value={workData.videoCloudflareUrl}
+                      onChange={e => workCreateHandlers.handleFieldChange("videoCloudflareUrl", e.target.value)}
+                      placeholder="https://watch.videodelivery.net/your-uuid"
+                      className="w-full px-3 py-2 border rounded-md border-gray-300 focus:outline-none focus:border-black text-sm"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -628,8 +666,67 @@ const WorkCreate = () => {
                     : "calc(86.25% - 62px)",
               }}
             >
-              {workData.videoProjectSrc ? (
+              {/* Video Player Tabs */}
+              {(workData.videoProjectSrc ? 1 : 0) + 
+               (workData.videoVimeoUrl ? 1 : 0) + 
+               (workData.videoYoutubeUrl ? 1 : 0) + 
+               (workData.videoCloudflareUrl ? 1 : 0) > 1 && (
+                <div className="absolute top-0 left-0 z-10 flex bg-black bg-opacity-70 rounded-tr-md">
+                  {workData.videoProjectSrc && (
+                    <button
+                      onClick={() => setActiveVideoTab("uploaded")}
+                      className={`px-3 py-1 text-xs font-medium ${
+                        activeVideoTab === "uploaded"
+                          ? "bg-white text-black"
+                          : "text-white hover:bg-white hover:bg-opacity-20"
+                      }`}
+                    >
+                      Uploaded
+                    </button>
+                  )}
+                  {workData.videoVimeoUrl && (
+                    <button
+                      onClick={() => setActiveVideoTab("vimeo")}
+                      className={`px-3 py-1 text-xs font-medium ${
+                        activeVideoTab === "vimeo"
+                          ? "bg-white text-black"
+                          : "text-white hover:bg-white hover:bg-opacity-20"
+                      }`}
+                    >
+                      Vimeo
+                    </button>
+                  )}
+                  {workData.videoYoutubeUrl && (
+                    <button
+                      onClick={() => setActiveVideoTab("youtube")}
+                      className={`px-3 py-1 text-xs font-medium ${
+                        activeVideoTab === "youtube"
+                          ? "bg-white text-black"
+                          : "text-white hover:bg-white hover:bg-opacity-20"
+                      }`}
+                    >
+                      YouTube
+                    </button>
+                  )}
+                  {workData.videoCloudflareUrl && (
+                    <button
+                      onClick={() => setActiveVideoTab("cloudflare")}
+                      className={`px-3 py-1 text-xs font-medium ${
+                        activeVideoTab === "cloudflare"
+                          ? "bg-white text-black"
+                          : "text-white hover:bg-white hover:bg-opacity-20"
+                      }`}
+                    >
+                      Cloudflare
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {/* Video Player Content */}
+              {activeVideoTab === "uploaded" && workData.videoProjectSrc ? (
                 <video
+                  id="video-project-player"
                   className="absolute top-0 left-0 w-full h-full object-cover"
                   src={workData.videoProjectSrc}
                   poster={workData.videoProjectPosterUrl}
@@ -659,6 +756,46 @@ const WorkCreate = () => {
                 >
                   Your browser does not support the video tag.
                 </video>
+              ) : activeVideoTab === "vimeo" && workData.videoVimeoUrl ? (
+                <iframe
+                  id="video-project-player"
+                  className="absolute top-0 left-0 w-full h-full"
+                  src={workData.videoVimeoUrl}
+                  frameBorder="0"
+                  allow="autoplay; fullscreen; picture-in-picture; accelerometer; encrypted-media; gyroscope"
+                  allowFullScreen
+                  title="Vimeo Video"
+                  style={{ 
+                    width: "100%", 
+                    height: "100%", 
+                    border: "none",
+                    position: "absolute",
+                    top: 0,
+                    left: 0
+                  }}
+                />
+              ) : activeVideoTab === "youtube" && workData.videoYoutubeUrl ? (
+                <iframe
+                  id="video-project-player"
+                  className="absolute top-0 left-0 w-full h-full"
+                  src={workData.videoYoutubeUrl}
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  title="YouTube Video"
+                  style={{ width: "100%", height: "100%", border: "none" }}
+                />
+              ) : activeVideoTab === "cloudflare" && workData.videoCloudflareUrl ? (
+                <iframe
+                  id="video-project-player"
+                  className="absolute top-0 left-0 w-full h-full"
+                  src={workData.videoCloudflareUrl}
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  title="Cloudflare Stream Video"
+                  style={{ width: "100%", height: "100%", border: "none" }}
+                />
               ) : (
                 <button
                   onClick={modalHandlers.openVideoProjectModal}

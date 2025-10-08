@@ -102,8 +102,8 @@ const GalleryEditorModal = ({
                     console.log(image);
                     return (
                       <Draggable
-                        key={image.id}
-                        draggableId={image.id}
+                        key={`gallery-item-${image.id}`}
+                        draggableId={`gallery-item-${image.id}`}
                         index={index}
                       >
                         {(provided, snapshot) => (

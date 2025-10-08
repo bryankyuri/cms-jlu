@@ -270,7 +270,7 @@ const VideoUploadModal = ({
                   Drop video here or click to browse
                 </h3>
                 <p className="text-gray-500 mb-4">
-                  Support for MP4, WebM, AVI, MOV files (max 50MB)
+                  Support for MP4, WebM, AVI, MOV files (max 120MB)
                 </p>
                 <button
                   type="button"

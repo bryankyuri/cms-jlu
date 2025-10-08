@@ -15,6 +15,9 @@ export const useWorkCreateHandlers = (workData, setWorkData, setTempImagesOrder,
       hero_banner_image: data.heroBannerImage,
       video_project_src: data.videoProjectSrc,
       video_project_poster: data.videoProjectPosterUrl,
+      video_vimeo_url: data.videoVimeoUrl,
+      video_youtube_url: data.videoYoutubeUrl,
+      video_cloudflare_url: data.videoCloudflareUrl,
       tags: data.tag, // Convert from 'tag' to 'tags'
       status: status,
       credits: data.credits.map((credit, index) => ({
@@ -75,12 +78,24 @@ export const useWorkCreateHandlers = (workData, setWorkData, setTempImagesOrder,
     }
     
     
-    // 5. Credits (at least one complete credit)
+    // 5. Credits validation (comprehensive check)
     const validCredits = data.credits.filter(credit => 
       credit.role.trim() && credit.name.some(name => name.trim())
     );
     
-    if (validCredits.length === 0) {
+    // Check for credits with empty names
+    const creditsWithEmptyNames = data.credits.filter(credit => 
+      credit.role.trim() && credit.name.some(name => !name.trim())
+    );
+    
+    if (creditsWithEmptyNames.length > 0) {
+      errors.push({
+        field: 'credits',
+        message: 'Some credits have empty name fields. Please fill in all names or remove empty fields.',
+        priority: 5,
+        scrollTarget: 'credits-section'
+      });
+    } else if (validCredits.length === 0) {
       errors.push({
         field: 'credits',
         message: 'At least one credit with role and name is required',
