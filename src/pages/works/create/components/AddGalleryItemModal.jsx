@@ -89,26 +89,77 @@ const AddGalleryItemModal = ({
         <div className="overflow-y-auto p-6 flex-grow">
           {/* Image Type Selection */}
           <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 mb-4">
               Image Type
             </label>
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-              {IMAGE_TYPES.map((type) => (
-                <button
-                  key={type.value}
-                  onClick={() => handleImageTypeChange(type.value)}
-                  className={`p-3 rounded-lg border text-left transition-colors ${
-                    selectedImageType === type.value
-                      ? "border-black bg-black text-white"
-                      : "border-gray-300 hover:border-gray-400 bg-white"
-                  }`}
-                >
-                  <div className="font-medium text-sm">{type.label}</div>
-                  <div className="text-xs mt-1 opacity-70">
-                    {type.imageCount} image{type.imageCount > 1 ? "s" : ""}
-                  </div>
-                </button>
-              ))}
+            
+            {/* Full Width Section */}
+            <div className="mb-5">
+              <h4 className="text-sm font-medium text-gray-600 mb-2">Full Width</h4>
+              <div className="grid grid-cols-3 gap-3">
+                {IMAGE_TYPES.filter(type => type.category === "Full Width").map((type) => (
+                  <button
+                    key={type.value}
+                    onClick={() => handleImageTypeChange(type.value)}
+                    className={`p-3 rounded-lg border text-center transition-colors ${
+                      selectedImageType === type.value
+                        ? "border-black bg-black text-white"
+                        : "border-gray-300 hover:border-gray-400 bg-white"
+                    }`}
+                  >
+                    <div className="font-medium text-sm">{type.label}</div>
+                    <div className="text-xs mt-1 opacity-70">
+                      {type.imageCount} image
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Two Column Section */}
+            <div className="mb-5">
+              <h4 className="text-sm font-medium text-gray-600 mb-2">Two Column</h4>
+              <div className="grid grid-cols-3 gap-3">
+                {IMAGE_TYPES.filter(type => type.category === "Two Column").map((type) => (
+                  <button
+                    key={type.value}
+                    onClick={() => handleImageTypeChange(type.value)}
+                    className={`p-3 rounded-lg border text-center transition-colors ${
+                      selectedImageType === type.value
+                        ? "border-black bg-black text-white"
+                        : "border-gray-300 hover:border-gray-400 bg-white"
+                    }`}
+                  >
+                    <div className="font-medium text-sm">{type.label}</div>
+                    <div className="text-xs mt-1 opacity-70">
+                      {type.imageCount} images
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Before/After Comparison Section */}
+            <div>
+              <h4 className="text-sm font-medium text-gray-600 mb-2">Before/After Comparison</h4>
+              <div className="grid grid-cols-3 gap-3">
+                {IMAGE_TYPES.filter(type => type.category === "Before/After Comparison").map((type) => (
+                  <button
+                    key={type.value}
+                    onClick={() => handleImageTypeChange(type.value)}
+                    className={`p-3 rounded-lg border text-center transition-colors ${
+                      selectedImageType === type.value
+                        ? "border-black bg-black text-white"
+                        : "border-gray-300 hover:border-gray-400 bg-white"
+                    }`}
+                  >
+                    <div className="font-medium text-sm">{type.label}</div>
+                    <div className="text-xs mt-1 opacity-70">
+                      {type.imageCount} images
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
           <div className="flex gap-4">
@@ -164,7 +215,7 @@ const AddGalleryItemModal = ({
 
             {/* Selected Images Preview */}
             <div className="w-full mb-6">
-              {selectedImages.length > 0 && (
+              {selectedImages.length > 0 && currentTypeConfig && (
                 <>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Selected Images ({selectedImages.length}/
@@ -320,6 +371,7 @@ const AddGalleryItemModal = ({
                       (img) => img.id === image.id
                     );
                     const canSelect =
+                      !currentTypeConfig ||
                       selectedImages.length < currentTypeConfig.imageCount ||
                       isSelected;
 

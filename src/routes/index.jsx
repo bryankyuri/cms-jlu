@@ -16,6 +16,8 @@ import AuthLayout from "../components/AuthLayout";
 import GuestLayout from "../components/GuestLayout";
 import Media from "../pages/Media/index";
 import VideoBanner from "../pages/VideoBanner";
+import Showreel from "../pages/Showreel";
+import ContactSubmissions from "../pages/ContactSubmissions";
 
 export const router = createBrowserRouter([
   {
@@ -103,6 +105,16 @@ export const router = createBrowserRouter([
       {
         path: "video-banner",
         element: <VideoBanner />,
+      },
+      {
+        path: "showreel",
+        element: <Showreel />,
+        loader: () => null,
+      },
+      {
+        path: "contact-submissions",
+        element: <ContactSubmissions />,
+        loader: () => null,
       },
       {
         path: "*",

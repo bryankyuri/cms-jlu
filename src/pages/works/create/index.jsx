@@ -44,12 +44,20 @@ const WorkCreate = () => {
   // Available tag options (predefined)
   const AVAILABLE_TAGS = ["MOTION GRAPHIC", "COLOR GRADING", "VFX", "CGI"];
 
-  // Available image types for gallery
+  // Available image types for gallery - grouped by category
   const IMAGE_TYPES = [
-    { value: "full-width", label: "Full Width Image", imageCount: 1 },
-    { value: "2col-full", label: "Two Column Layout", imageCount: 2 },
-    { value: "2col-4:5", label: "Two Column 4:5 Layout", imageCount: 2 },
-    { value: "compare-full", label: "Before/After Comparison", imageCount: 2 },
+    // Full Width options
+    { value: "full-16:9", label: "16:9", imageCount: 1, category: "Full Width" },
+    { value: "full-2.35:1", label: "2.35:1", imageCount: 1, category: "Full Width" },
+    { value: "full-2.39:1", label: "2.39:1", imageCount: 1, category: "Full Width" },
+    // Two Column options
+    { value: "2col-16:9", label: "16:9", imageCount: 2, category: "Two Column" },
+    { value: "2col-2.35:1", label: "2.35:1", imageCount: 2, category: "Two Column" },
+    { value: "2col-2.39:1", label: "2.39:1", imageCount: 2, category: "Two Column" },
+    // Before/After Comparison options
+    { value: "compare-16:9", label: "16:9", imageCount: 2, category: "Before/After Comparison" },
+    { value: "compare-2.35:1", label: "2.35:1", imageCount: 2, category: "Before/After Comparison" },
+    { value: "compare-2.39:1", label: "2.39:1", imageCount: 2, category: "Before/After Comparison" },
   ];
 
   // Use custom hooks

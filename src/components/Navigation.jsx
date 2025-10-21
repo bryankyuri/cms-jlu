@@ -148,6 +148,15 @@ const Navigation = ({ deviceType }) => {
               </NavLink>
               <span>I</span>
               <NavLink
+                to="/showreel"
+                className={({ isActive }) =>
+                  isActive ? "" : "hover:font-medium"
+                }
+              >
+                SHOWREEL
+              </NavLink>
+              <span>I</span>
+              <NavLink
                 to="/works"
                 className={({ isActive }) =>
                   isActive ? "" : "hover:font-medium"
@@ -163,6 +172,15 @@ const Navigation = ({ deviceType }) => {
                 }
               >
                 Media Library
+              </NavLink>
+              <span>I</span>
+              <NavLink
+                to="/contact-submissions"
+                className={({ isActive }) =>
+                  isActive ? "" : "hover:font-medium"
+                }
+              >
+                Contact Submissions
               </NavLink>
        
              
@@ -234,6 +252,15 @@ const Navigation = ({ deviceType }) => {
                 Video Banner
               </NavLink>
               <NavLink
+                to="/showreel"
+                className={({ isActive }) =>
+                  `block py-3 border-b ${isActive ? "" : ""}`
+                }
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Showreel
+              </NavLink>
+              <NavLink
                 to="/works"
                 className={({ isActive }) =>
                   `block py-3 border-b ${isActive ? "" : ""}`
@@ -250,6 +277,16 @@ const Navigation = ({ deviceType }) => {
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Media
+              </NavLink>
+
+              <NavLink
+                to="/contact-submissions"
+                className={({ isActive }) =>
+                  `block py-3 border-b ${isActive ? "" : ""}`
+                }
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Contact Submissions
               </NavLink>
 
                <NavLink

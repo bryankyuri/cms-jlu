@@ -1,10 +1,10 @@
 // Base API URL configuration
-const API_BASE_URL = process.env.NODE_ENV === 'production' 
+const API_BASE_URL = process.env.NODE_ENV !== 'production' 
   ? import.meta.env.VITE_REACT_APP_API_URL
   : 'http://127.0.0.1:8000/api';
 
 // Storage base URL for media files
-const STORAGE_BASE_URL = process.env.NODE_ENV === 'production' 
+const STORAGE_BASE_URL = process.env.NODE_ENV !== 'production' 
   ? import.meta.env.VITE_REACT_APP_STORAGE_URL
   : 'http://127.0.0.1:8000/storage';
 
@@ -426,53 +426,52 @@ export const videoBannerAPI = {
   }
 };
 
-// Analytics API functions
-export const analyticsAPI = {
-  // Get dashboard analytics data
-  getDashboardData: async (period = 'last30days') => {
-    return await apiRequest('/analytics/dashboard', {
+// Showreel API
+export const showreelAPI = {
+  // Get all showreels
+  getAll: async () => {
+    return await apiRequest('/showreels');
+  },
+
+  // Get single showreel by ID
+  get: async (id) => {
+    return await apiRequest(`/showreels/${id}`);
+  },
+
+  // Create new showreel
+  create: async (showreelData) => {
+    return await apiRequest('/showreels', {
       method: 'POST',
-      body: JSON.stringify({ period }),
+      body: JSON.stringify(showreelData),
     });
   },
 
-  // Get real-time analytics
-  getRealTimeData: async () => {
-    return await apiRequest('/analytics/realtime');
-  },
-
-  // Get page analytics
-  getPageAnalytics: async (pagePath, period = 'last30days') => {
-    return await apiRequest('/analytics/page', {
-      method: 'POST',
-      body: JSON.stringify({ pagePath, period }),
+  // Update existing showreel
+  update: async (id, showreelData) => {
+    return await apiRequest(`/showreels/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(showreelData),
     });
   },
 
-  // Get audience insights
-  getAudienceInsights: async (period = 'last30days') => {
-    return await apiRequest('/analytics/audience', {
-      method: 'POST',
-      body: JSON.stringify({ period }),
+  // Delete showreel
+  delete: async (id) => {
+    return await apiRequest(`/showreels/${id}`, {
+      method: 'DELETE',
     });
   },
 
-  // Get traffic sources
-  getTrafficSources: async (period = 'last30days') => {
-    return await apiRequest('/analytics/traffic-sources', {
+  // Reorder showreels
+  reorder: async (showreelsData) => {
+    return await apiRequest('/showreels/reorder', {
       method: 'POST',
-      body: JSON.stringify({ period }),
-    });
-  },
-
-  // Get conversion data
-  getConversions: async (period = 'last30days') => {
-    return await apiRequest('/analytics/conversions', {
-      method: 'POST',
-      body: JSON.stringify({ period }),
+      body: JSON.stringify(showreelsData),
     });
   }
 };
+
+// Analytics API functions
+export { analyticsApi } from './analytics';
 
 // Legacy functions for backward compatibility
 export const fetchData = async (endpoint) => {
@@ -484,4 +483,142 @@ export const postData = async (endpoint, data) => {
     method: 'POST',
     body: JSON.stringify(data),
   });
+};
+
+// Contact Submissions API
+export const contactSubmissionsApi = {
+  // Get all contact submissions with filters, search, sorting, and pagination
+  getAll: async (params = {}) => {
+    try {
+      const searchParams = new URLSearchParams();
+      
+      // Add all filter parameters
+      Object.keys(params).forEach(key => {
+        if (params[key] !== null && params[key] !== undefined && params[key] !== '') {
+          searchParams.append(key, params[key]);
+        }
+      });
+
+      const token = getAuthToken();
+      const response = await fetch(`${API_BASE_URL}/admin/contact-submissions?${searchParams}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching contact submissions:', error);
+      throw error;
+    }
+  },
+
+  // Get a specific contact submission
+  getById: async (id) => {
+    try {
+      const token = getAuthToken();
+      const response = await fetch(`${API_BASE_URL}/admin/contact-submissions/${id}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching contact submission:', error);
+      throw error;
+    }
+  },
+
+  // Update a contact submission
+  update: async (id, data) => {
+    try {
+      const token = getAuthToken();
+      const response = await fetch(`${API_BASE_URL}/admin/contact-submissions/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error updating contact submission:', error);
+      throw error;
+    }
+  },
+
+  // Delete a contact submission
+  delete: async (id) => {
+    try {
+      const token = getAuthToken();
+      const response = await fetch(`${API_BASE_URL}/admin/contact-submissions/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error deleting contact submission:', error);
+      throw error;
+    }
+  },
+
+  // Bulk actions
+  bulkAction: async (action, submissionIds, options = {}) => {
+    try {
+      const token = getAuthToken();
+      const response = await fetch(`${API_BASE_URL}/admin/contact-submissions/bulk-action`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({
+          action,
+          submission_ids: submissionIds,
+          ...options
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error performing bulk action:', error);
+      throw error;
+    }
+  },
 };
