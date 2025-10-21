@@ -36,6 +36,8 @@ export const useWorkEdit = () => {
   // Hero banner image editor states
   const [isHeroBannerModalOpen, setIsHeroBannerModalOpen] = useState(false);
   const [selectedHeroBannerImage, setSelectedHeroBannerImage] = useState(null);
+  const [backgroundPosX, setBackgroundPosX] = useState('center');
+  const [backgroundPosY, setBackgroundPosY] = useState('top');
 
   // Video project editor states
   const [isVideoProjectModalOpen, setIsVideoProjectModalOpen] = useState(false);
@@ -68,6 +70,8 @@ export const useWorkEdit = () => {
   // Work data state
   const [workData, setWorkData] = useState({
     heroBannerImage: "",
+    heroBannerPositionX: "center",
+    heroBannerPositionY: "top",
     title: "",
     client: "",
     category: "film/series",
@@ -308,6 +312,8 @@ export const useWorkEdit = () => {
   const transformApiDataToWorkData = (apiData) => {
     return {
       heroBannerImage: apiData.hero_banner_image || "",
+      heroBannerPositionX: apiData.hero_banner_position_x || "center",
+      heroBannerPositionY: apiData.hero_banner_position_y || "top",
       title: apiData.title || "",
       client: apiData.client || "",
       category: apiData.category || "film/series",
@@ -417,6 +423,10 @@ export const useWorkEdit = () => {
     setIsHeroBannerModalOpen,
     selectedHeroBannerImage,
     setSelectedHeroBannerImage,
+    backgroundPosX,
+    setBackgroundPosX,
+    backgroundPosY,
+    setBackgroundPosY,
     isVideoProjectModalOpen,
     setIsVideoProjectModalOpen,
     selectedVideoProject,

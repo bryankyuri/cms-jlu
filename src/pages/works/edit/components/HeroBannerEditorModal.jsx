@@ -30,7 +30,25 @@ const HeroBannerEditorModal = ({
   isImageUploadModalOpen,
   openImageUploadModal,
   closeImageUploadModal,
+  // Background position props (new)
+  backgroundPosX,
+  setBackgroundPosX,
+  backgroundPosY,
+  setBackgroundPosY,
 }) => {
+  // Background position options (9-point grid)
+  const POSITION_OPTIONS = [
+    { x: 'left', y: 'top', label: 'Top Left', icon: '↖' },
+    { x: 'center', y: 'top', label: 'Top Center', icon: '↑' },
+    { x: 'right', y: 'top', label: 'Top Right', icon: '↗' },
+    { x: 'left', y: 'center', label: 'Middle Left', icon: '←' },
+    { x: 'center', y: 'center', label: 'Center', icon: '●' },
+    { x: 'right', y: 'center', label: 'Middle Right', icon: '→' },
+    { x: 'left', y: 'bottom', label: 'Bottom Left', icon: '↙' },
+    { x: 'center', y: 'bottom', label: 'Bottom Center', icon: '↓' },
+    { x: 'right', y: 'bottom', label: 'Bottom Right', icon: '↘' },
+  ];
+
   // Use the custom hook for image selection with search, sort, and pagination
   const {
     availableImages,
@@ -91,7 +109,7 @@ const HeroBannerEditorModal = ({
                 style={{
                   backgroundImage: `url(${workData.heroBannerImage})`,
                   backgroundSize: "cover",
-                  backgroundPosition: "center",
+                  backgroundPosition: `${workData.heroBannerPositionX || 'center'} ${workData.heroBannerPositionY || 'top'}`,
                   backgroundColor: "black",
                 }}
               >
@@ -115,7 +133,7 @@ const HeroBannerEditorModal = ({
                       : ""
                   })`,
                   backgroundSize: "cover",
-                  backgroundPosition: "center",
+                  backgroundPosition: `${backgroundPosX} ${backgroundPosY}`,
                   backgroundColor: "black",
                 }}
               >
@@ -124,6 +142,66 @@ const HeroBannerEditorModal = ({
                     No Image Selected
                   </div>
                 )}
+              </div>
+            </div>
+          </div>
+
+          {/* Background Position Selector */}
+          <div className="mb-6 border-t pt-6">
+            <label className="block text-sm font-medium text-gray-700 mb-3">
+              Background Anchor Position
+            </label>
+            
+            <div className="flex gap-6 items-start">
+              {/* Visual 9-Point Grid */}
+              <div className="flex-shrink-0">
+                <div className="text-xs text-gray-500 mb-2">Position Grid</div>
+                <div className="grid grid-cols-3 gap-2 p-3 border border-gray-300 rounded-lg bg-gray-50">
+                  {POSITION_OPTIONS.map((option) => {
+                    const isActive = backgroundPosX === option.x && backgroundPosY === option.y;
+                    return (
+                      <button
+                        key={`${option.x}-${option.y}`}
+                        type="button"
+                        onClick={() => {
+                          setBackgroundPosX(option.x);
+                          setBackgroundPosY(option.y);
+                        }}
+                        className={`w-8 h-8 flex items-center justify-center rounded border-2 transition-all ${
+                          isActive
+                            ? 'bg-black text-white border-black shadow-lg'
+                            : 'bg-white hover:bg-gray-50 border-gray-300 hover:border-gray-400'
+                        }`}
+                        title={option.label}
+                      >
+                        {isActive && <span className="text-base leading-none">●</span>}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Selected Position Info */}
+              <div className="flex-grow flex flex-col">
+                <div className="text-xs text-gray-500 mb-2">Current Position</div>
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 flex-grow flex flex-col justify-center min-h-[138px]">
+                  <div className="text-lg font-medium mb-2">
+                    {POSITION_OPTIONS.find(
+                      opt => opt.x === backgroundPosX && opt.y === backgroundPosY
+                    )?.label || 'Custom'}
+                  </div>
+                  <div className="flex gap-4 text-sm text-gray-600">
+                    <div>
+                      <span className="font-medium">Horizontal:</span> {backgroundPosX}
+                    </div>
+                    <div>
+                      <span className="font-medium">Vertical:</span> {backgroundPosY}
+                    </div>
+                  </div>
+                  <div className="mt-3 text-xs text-gray-500">
+                    💡 Click a position on the grid to change where the image is anchored
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -368,8 +446,8 @@ const HeroBannerEditorModal = ({
           <button
             type="button"
             className="px-6 py-3 text-sm font-semibold rounded-md bg-black text-white hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            onClick={updateHeroBannerImage}
-            disabled={!selectedHeroBannerImage}
+            onClick={() => updateHeroBannerImage(backgroundPosX, backgroundPosY)}
+            disabled={!selectedHeroBannerImage && !workData.heroBannerImage}
           >
             Update Hero Banner
           </button>

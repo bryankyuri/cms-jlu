@@ -92,6 +92,10 @@ const WorkCreate = () => {
     isHeroBannerModalOpen,
     selectedHeroBannerImage,
     setSelectedHeroBannerImage,
+    backgroundPosX,
+    setBackgroundPosX,
+    backgroundPosY,
+    setBackgroundPosY,
     isVideoProjectModalOpen,
     selectedVideoProject,
     setSelectedVideoProject,
@@ -199,8 +203,7 @@ const WorkCreate = () => {
             backgroundImage: `url(${workData.heroBannerImage})`,
             backgroundSize:
               deviceType === "desktop" ? "100% auto" : "auto 100%",
-            backgroundPosition:
-              deviceType === "desktop" ? `center 0px` : "center 0px",
+            backgroundPosition: `${workData.heroBannerPositionX || 'center'} ${workData.heroBannerPositionY || 'top'}`,
             backgroundRepeat: "no-repeat",
           }}
         >
@@ -1082,6 +1085,11 @@ const WorkCreate = () => {
         openImageUploadModal={modalHandlers.openImageUploadModal}
         closeImageUploadModal={modalHandlers.closeImageUploadModal}
         fetchAvailableImages={workCreateState.fetchAvailableImages}
+        // Background position props
+        backgroundPosX={backgroundPosX}
+        setBackgroundPosX={setBackgroundPosX}
+        backgroundPosY={backgroundPosY}
+        setBackgroundPosY={setBackgroundPosY}
       />
 
       {/* Video project editor modal component */}

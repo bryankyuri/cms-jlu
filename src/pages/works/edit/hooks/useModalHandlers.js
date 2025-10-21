@@ -71,21 +71,36 @@ export const useModalHandlers = (
     setSelectedHeroBannerImage(image);
   };
 
-  const updateHeroBannerImage = () => {
-    if (!selectedHeroBannerImage) {
+  const updateHeroBannerImage = (posX, posY) => {
+    // Allow updating position if there's an existing image, even without selecting a new one
+    const hasExistingImage = workData.heroBannerImage;
+    const hasNewImage = selectedHeroBannerImage;
+
+    if (!hasExistingImage && !hasNewImage) {
       toast.error("Please select an image for the hero banner");
       return;
     }
 
-    const imageUrl = mediaAPI.getDirectUrl(selectedHeroBannerImage.path);
+    // Use new image if selected, otherwise keep the existing one
+    const imageUrl = hasNewImage 
+      ? mediaAPI.getDirectUrl(selectedHeroBannerImage.path)
+      : workData.heroBannerImage;
 
     setWorkData((prevData) => ({
       ...prevData,
       heroBannerImage: imageUrl,
+      heroBannerPositionX: posX || 'center',
+      heroBannerPositionY: posY || 'top',
     }));
 
     closeHeroBannerModal();
-    toast.success("Hero banner image updated successfully");
+    
+    // Show appropriate success message
+    if (hasNewImage) {
+      toast.success("Hero banner image updated successfully");
+    } else {
+      toast.success("Hero banner position updated successfully");
+    }
   };
 
   // Video project editing functions

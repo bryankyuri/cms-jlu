@@ -34,6 +34,8 @@ export const useWorkCreate = () => {
   // Hero banner image editor states
   const [isHeroBannerModalOpen, setIsHeroBannerModalOpen] = useState(false);
   const [selectedHeroBannerImage, setSelectedHeroBannerImage] = useState(null);
+  const [backgroundPosX, setBackgroundPosX] = useState('center');
+  const [backgroundPosY, setBackgroundPosY] = useState('top');
 
   // Video project editor states
   const [isVideoProjectModalOpen, setIsVideoProjectModalOpen] = useState(false);
@@ -62,6 +64,8 @@ export const useWorkCreate = () => {
   // Work data state
   const [workData, setWorkData] = useState({
     heroBannerImage: "",
+    heroBannerPositionX: "center",
+    heroBannerPositionY: "top",
     title: "",
     client: "",
     category: "film/series",
@@ -334,6 +338,10 @@ export const useWorkCreate = () => {
     setIsHeroBannerModalOpen,
     selectedHeroBannerImage,
     setSelectedHeroBannerImage,
+    backgroundPosX,
+    setBackgroundPosX,
+    backgroundPosY,
+    setBackgroundPosY,
     isVideoProjectModalOpen,
     setIsVideoProjectModalOpen,
     selectedVideoProject,
