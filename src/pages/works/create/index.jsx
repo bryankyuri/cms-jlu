@@ -115,6 +115,10 @@ const WorkCreate = () => {
     heroBannerFillMode,
     activeVideoTab,
     setActiveVideoTab,
+    isVideoPlaying,
+    setIsVideoPlaying,
+    hasVideoStarted,
+    setHasVideoStarted,
     // Functions
     animateSlider,
     handleImageClick,
@@ -762,37 +766,89 @@ const WorkCreate = () => {
 
               {/* Video Player Content */}
               {activeVideoTab === "uploaded" && workData.videoProjectSrc ? (
-                <video
-                  id="video-project-player"
-                  className="absolute top-0 left-0 w-full h-full object-cover"
-                  src={workData.videoProjectSrc}
-                  poster={workData.videoProjectPosterUrl}
-                  controls
-                  controlsList="nodownload noplaybackrate"
-                  playsInline
-                  preload="metadata"
-                  style={{ borderRadius: "0px" }}
-                  onError={(e) => {
-                    console.log("Showreel video failed to load:", e);
-                  }}
-                  onLoadedData={() => {
-                    console.log("Showreel video loaded successfully");
-                  }}
-                  onPlay={(e) => {
-                    // Auto fullscreen when video starts playing
-                    if (e.target.requestFullscreen) {
-                      e.target.requestFullscreen().catch((err) => {
-                        console.log("Fullscreen request failed:", err);
-                      });
-                    } else if (e.target.webkitRequestFullscreen) {
-                      e.target.webkitRequestFullscreen();
-                    } else if (e.target.msRequestFullscreen) {
-                      e.target.msRequestFullscreen();
-                    }
-                  }}
-                >
-                  Your browser does not support the video tag.
-                </video>
+                <>
+                  {/* Custom Poster Overlay */}
+                  {!hasVideoStarted && workData.videoProjectPosterUrl && (
+                    <>
+                      <img
+                        src={workData.videoProjectPosterUrl}
+                        alt="Video poster"
+                        className="absolute top-0 left-0 w-full h-full object-cover z-20"
+                      />
+                      
+                      {/* Overlay content */}
+                      <div className="absolute inset-0 z-30">
+                        {/* Title on top left */}
+                        <div className="absolute top-4 left-4 lg:top-6 lg:left-6">
+                          <h2 className="text-white text-lg lg:text-2xl font-bold drop-shadow-lg">
+                            {workData.title}
+                          </h2>
+                        </div>
+                        
+                        {/* Play button in center */}
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            const video = e.target.closest('.relative').querySelector('video');
+                            if (video) {
+                              video.play();
+                            }
+                          }}
+                          className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-black bg-opacity-80 hover:bg-opacity-100 rounded-full w-20 h-20 lg:w-24 lg:h-24 flex items-center justify-center transition-all duration-300 hover:scale-110"
+                          aria-label="Play video"
+                        >
+                          {/* Play icon SVG */}
+                          <svg 
+                            className="w-10 h-10 lg:w-12 lg:h-12 text-white ml-1" 
+                            fill="currentColor" 
+                            viewBox="0 0 24 24"
+                          >
+                            <path d="M8 5v14l11-7z" />
+                          </svg>
+                        </button>
+                      </div>
+                    </>
+                  )}
+                  
+                  <video
+                    id="video-project-player"
+                    className="absolute top-0 left-0 w-full h-full object-contain"
+                    src={workData.videoProjectSrc}
+                    controls
+                    controlsList="nodownload noplaybackrate"
+                    playsInline
+                    preload="metadata"
+                    style={{ borderRadius: "0px" }}
+                    onError={(e) => {
+                      console.log("Showreel video failed to load:", e);
+                    }}
+                    onLoadedData={() => {
+                      console.log("Showreel video loaded successfully");
+                    }}
+                    onPlay={(e) => {
+                      setIsVideoPlaying(true);
+                      setHasVideoStarted(true);
+                      // Auto fullscreen when video starts playing
+                      if (e.target.requestFullscreen) {
+                        e.target.requestFullscreen().catch((err) => {
+                          console.log("Fullscreen request failed:", err);
+                        });
+                      } else if (e.target.webkitRequestFullscreen) {
+                        e.target.webkitRequestFullscreen();
+                      } else if (e.target.msRequestFullscreen) {
+                        e.target.msRequestFullscreen();
+                      }
+                    }}
+                    onPause={() => {
+                      setIsVideoPlaying(false);
+                    }}
+                    onEnded={() => {
+                      setIsVideoPlaying(false);
+                    }}
+                  >
+                    Your browser does not support the video tag.
+                  </video>
+                </>
               ) : activeVideoTab === "vimeo" && workData.videoVimeoUrl ? (
                 <iframe
                   id="video-project-player"

@@ -67,6 +67,10 @@ export const useWorkCreate = () => {
   // Video player tab state
   const [activeVideoTab, setActiveVideoTab] = useState("uploaded");
 
+  // Video player states
+  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
+  const [hasVideoStarted, setHasVideoStarted] = useState(false);
+
   // Work data state
   const [workData, setWorkData] = useState({
     heroBannerImage: "",
@@ -401,6 +405,10 @@ export const useWorkCreate = () => {
     heroBannerFillMode,
     activeVideoTab,
     setActiveVideoTab,
+    isVideoPlaying,
+    setIsVideoPlaying,
+    hasVideoStarted,
+    setHasVideoStarted,
     workData,
     setWorkData,
     tempWorkData,
