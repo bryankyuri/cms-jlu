@@ -1,10 +1,13 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useContext } from "react";
 import { useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import { mediaAPI, worksAPI } from "../../../../api/index";
+import { AppContext } from "../../../../context/AppContext.jsx";
 
 export const useWorkEdit = () => {
   const { id } = useParams(); // Get work ID from URL params
+  const { deviceType } = useContext(AppContext);
+  
   // Animation states
   const [sliderPosition, setSliderPosition] = useState(50);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -63,6 +66,9 @@ export const useWorkEdit = () => {
   // Hero banner button states
   const [heroBannerButtonBg, setHeroBannerButtonBg] = useState("bg-black bg-opacity-70");
   const [isHeroBannerVisible, setIsHeroBannerVisible] = useState(true);
+  const [heroBannerFillMode, setHeroBannerFillMode] = useState(
+    deviceType === "desktop" ? "100% auto" : "auto 100%"
+  );
 
   // Video player tab state
   const [activeVideoTab, setActiveVideoTab] = useState("uploaded");
@@ -214,6 +220,37 @@ export const useWorkEdit = () => {
 
     updateButtonBackground();
   }, [workData.heroBannerImage]);
+
+  // Detect if hero banner image fills the container height
+  useEffect(() => {
+    if (!workData.heroBannerImage) {
+      setHeroBannerFillMode(deviceType === "desktop" ? "100% auto" : "auto 100%");
+      return;
+    }
+
+    const img = new Image();
+    img.src = workData.heroBannerImage;
+    
+    img.onload = () => {
+      const imageAspectRatio = img.naturalWidth / img.naturalHeight;
+      
+      // Check if image is 16:9 (1.777) or 4:3 (1.333)
+      const is16by9 = Math.abs(imageAspectRatio - (16/9)) < 0.01;
+      const is4by3 = Math.abs(imageAspectRatio - (4/3)) < 0.01;
+
+      if (is16by9 || is4by3) {
+        // For 16:9 or 4:3, use the default behavior
+        setHeroBannerFillMode(deviceType === "desktop" ? "100% auto" : "auto 100%");
+      } else {
+        // For other ratios, always use auto 100% to fill height
+        setHeroBannerFillMode("auto 100%");
+      }
+    };
+
+    img.onerror = () => {
+      setHeroBannerFillMode(deviceType === "desktop" ? "100% auto" : "auto 100%");
+    };
+  }, [workData.heroBannerImage, deviceType]);
 
   // Track hero banner visibility for sticky button
   useEffect(() => {
@@ -449,6 +486,7 @@ export const useWorkEdit = () => {
     setIsVideoUploadModalOpen,
     heroBannerButtonBg,
     isHeroBannerVisible,
+    heroBannerFillMode,
     activeVideoTab,
     setActiveVideoTab,
     workData,

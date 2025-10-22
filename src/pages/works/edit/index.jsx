@@ -49,16 +49,22 @@ const WorkEdit = () => {
   const IMAGE_TYPES = [
     // Full Width options
     { value: "full-16:9", label: "16:9", imageCount: 1, category: "Full Width" },
+    { value: "full-1.85:1", label: "1.85:1", imageCount: 1, category: "Full Width" },
     { value: "full-2.35:1", label: "2.35:1", imageCount: 1, category: "Full Width" },
     { value: "full-2.39:1", label: "2.39:1", imageCount: 1, category: "Full Width" },
+    { value: "full-4:3", label: "4:3", imageCount: 1, category: "Full Width" },
     // Two Column options
     { value: "2col-16:9", label: "16:9", imageCount: 2, category: "Two Column" },
+    { value: "2col-1.85:1", label: "1.85:1", imageCount: 2, category: "Two Column" },
     { value: "2col-2.35:1", label: "2.35:1", imageCount: 2, category: "Two Column" },
     { value: "2col-2.39:1", label: "2.39:1", imageCount: 2, category: "Two Column" },
+    { value: "2col-4:3", label: "4:3", imageCount: 2, category: "Two Column" },
     // Before/After Comparison options
     { value: "compare-16:9", label: "16:9", imageCount: 2, category: "Before/After Comparison" },
+    { value: "compare-1.85:1", label: "1.85:1", imageCount: 2, category: "Before/After Comparison" },
     { value: "compare-2.35:1", label: "2.35:1", imageCount: 2, category: "Before/After Comparison" },
     { value: "compare-2.39:1", label: "2.39:1", imageCount: 2, category: "Before/After Comparison" },
+    { value: "compare-4:3", label: "4:3", imageCount: 2, category: "Before/After Comparison" },
   ];
 
   // Use custom hooks
@@ -107,6 +113,7 @@ const WorkEdit = () => {
     isSaving,
     heroBannerButtonBg,
     isHeroBannerVisible,
+    heroBannerFillMode,
     activeVideoTab,
     setActiveVideoTab,
     // Loading states
@@ -235,8 +242,7 @@ const WorkEdit = () => {
                 ? "calc(100vh - 62px)"
                 : "calc(100vh - 66px)",
             backgroundImage: `url(${workData.heroBannerImage})`,
-            backgroundSize:
-              deviceType === "desktop" ? "100% auto" : "auto 100%",
+            backgroundSize: heroBannerFillMode,
             backgroundPosition: `${workData.heroBannerPositionX || 'center'} ${workData.heroBannerPositionY || 'top'}`,
             backgroundRepeat: "no-repeat",
           }}
@@ -357,19 +363,7 @@ const WorkEdit = () => {
                 </div>
               </div>
             </FadeInSection>
-            <FadeInSection delay={0.3}>
-              <div className="w-full flex border-b border-black py-2 lg:py-5">
-                <div className="w-[78px] lg:mr-[60px] mr-[24px]">SLUG</div>
-                <div className="lg:w-[calc(50%-120px)] w-[calc(100%-76px)] font-medium">
-                  <div className="p-1 bg-gray-100 border rounded-md border-gray-300 text-gray-600 font-mono text-sm">
-                    {workData.slug || "Generated automatically from title"}
-                  </div>
-                  <div className="text-xs text-gray-500 mt-1">
-                    Auto-generated from title. Updates when you save changes.
-                  </div>
-                </div>
-              </div>
-            </FadeInSection>
+           
             <FadeInSection delay={0.3}>
               <div className="w-full flex border-b border-black py-2 lg:py-5">
                 <div className="w-[78px] lg:mr-[60px] mr-[24px] flex">
@@ -655,6 +649,13 @@ const WorkEdit = () => {
               <label className="text-lg font-medium text-black mb-2 block">
                 Project Video <span className="text-red-700 ml-1"> *</span>
               </label>
+              
+              {/* Helper text */}
+              <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                <p className="text-sm text-blue-800">
+                  <strong>ℹ️ At least one video source is required:</strong> You can upload a video to the media gallery, or provide a Vimeo, YouTube, or Cloudflare Stream URL. Multiple sources are supported.
+                </p>
+              </div>
 
               <div className="flex flex-col gap-4">
                 <div className="flex items-center gap-4">
@@ -666,12 +667,25 @@ const WorkEdit = () => {
                     Select Video from Gallery
                   </button>
                   {workData.videoProjectSrc && (
-                    <div className="flex items-center text-sm text-gray-600">
-                      <span>Current: </span>
-                      <span className="ml-1 max-w-xs truncate">
-                        {workData.videoProjectSrc.split("/").pop() ||
-                          "Selected video"}
-                      </span>
+                    <div className="flex items-center gap-3 text-sm text-gray-600">
+                      <div className="flex items-center">
+                        <span>Current: </span>
+                        <span className="ml-1 max-w-xs truncate">
+                          {workData.videoProjectSrc.split("/").pop() ||
+                            "Selected video"}
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          workEditHandlers.handleFieldChange("videoProjectSrc", "");
+                          workEditHandlers.handleFieldChange("videoProjectPoster", "");
+                        }}
+                        className="text-red-600 hover:text-red-700 p-1 rounded hover:bg-red-50 transition-colors"
+                        title="Remove selected video"
+                      >
+                        <FiX className="w-4 h-4" />
+                      </button>
                     </div>
                   )}
                 </div>

@@ -48,16 +48,22 @@ const WorkCreate = () => {
   const IMAGE_TYPES = [
     // Full Width options
     { value: "full-16:9", label: "16:9", imageCount: 1, category: "Full Width" },
+    { value: "full-1.85:1", label: "1.85:1", imageCount: 1, category: "Full Width" },
     { value: "full-2.35:1", label: "2.35:1", imageCount: 1, category: "Full Width" },
     { value: "full-2.39:1", label: "2.39:1", imageCount: 1, category: "Full Width" },
+    { value: "full-4:3", label: "4:3", imageCount: 1, category: "Full Width" },
     // Two Column options
     { value: "2col-16:9", label: "16:9", imageCount: 2, category: "Two Column" },
+    { value: "2col-1.85:1", label: "1.85:1", imageCount: 2, category: "Two Column" },
     { value: "2col-2.35:1", label: "2.35:1", imageCount: 2, category: "Two Column" },
     { value: "2col-2.39:1", label: "2.39:1", imageCount: 2, category: "Two Column" },
+    { value: "2col-4:3", label: "4:3", imageCount: 2, category: "Two Column" },
     // Before/After Comparison options
     { value: "compare-16:9", label: "16:9", imageCount: 2, category: "Before/After Comparison" },
+    { value: "compare-1.85:1", label: "1.85:1", imageCount: 2, category: "Before/After Comparison" },
     { value: "compare-2.35:1", label: "2.35:1", imageCount: 2, category: "Before/After Comparison" },
     { value: "compare-2.39:1", label: "2.39:1", imageCount: 2, category: "Before/After Comparison" },
+    { value: "compare-4:3", label: "4:3", imageCount: 2, category: "Before/After Comparison" },
   ];
 
   // Use custom hooks
@@ -106,6 +112,7 @@ const WorkCreate = () => {
     isSaving,
     heroBannerButtonBg,
     isHeroBannerVisible,
+    heroBannerFillMode,
     activeVideoTab,
     setActiveVideoTab,
     // Functions
@@ -201,8 +208,7 @@ const WorkCreate = () => {
                 ? "calc(100vh - 62px)"
                 : "calc(100vh - 66px)",
             backgroundImage: `url(${workData.heroBannerImage})`,
-            backgroundSize:
-              deviceType === "desktop" ? "100% auto" : "auto 100%",
+            backgroundSize: heroBannerFillMode,
             backgroundPosition: `${workData.heroBannerPositionX || 'center'} ${workData.heroBannerPositionY || 'top'}`,
             backgroundRepeat: "no-repeat",
           }}
@@ -613,6 +619,13 @@ const WorkCreate = () => {
               <label className="text-lg font-medium text-black mb-2 block">
                 Project Video <span className="text-red-700 ml-1"> *</span>
               </label>
+              
+              {/* Helper text */}
+              <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                <p className="text-sm text-blue-800">
+                  <strong>ℹ️ At least one video source is required:</strong> You can upload a video to the media gallery, or provide a Vimeo, YouTube, or Cloudflare Stream URL. Multiple sources are supported.
+                </p>
+              </div>
 
               <div className="flex flex-col gap-4">
                 <div className="flex items-center gap-4">
@@ -624,12 +637,25 @@ const WorkCreate = () => {
                     Select Video from Gallery
                   </button>
                   {workData.videoProjectSrc && (
-                    <div className="flex items-center text-sm text-gray-600">
-                      <span>Current: </span>
-                      <span className="ml-1 max-w-xs truncate">
-                        {workData.videoProjectSrc.split("/").pop() ||
-                          "Selected video"}
-                      </span>
+                    <div className="flex items-center gap-3 text-sm text-gray-600">
+                      <div className="flex items-center">
+                        <span>Current: </span>
+                        <span className="ml-1 max-w-xs truncate">
+                          {workData.videoProjectSrc.split("/").pop() ||
+                            "Selected video"}
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          workCreateHandlers.handleFieldChange("videoProjectSrc", "");
+                          workCreateHandlers.handleFieldChange("videoProjectPoster", "");
+                        }}
+                        className="text-red-600 hover:text-red-700 p-1 rounded hover:bg-red-50 transition-colors"
+                        title="Remove selected video"
+                      >
+                        <FiX className="w-4 h-4" />
+                      </button>
                     </div>
                   )}
                 </div>

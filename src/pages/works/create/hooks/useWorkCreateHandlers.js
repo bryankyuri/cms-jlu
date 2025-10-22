@@ -13,6 +13,8 @@ export const useWorkCreateHandlers = (workData, setWorkData, setTempImagesOrder,
       year: data.year,
       description: data.description,
       hero_banner_image: data.heroBannerImage,
+      hero_banner_position_x: data.heroBannerPositionX,
+      hero_banner_position_y: data.heroBannerPositionY,
       video_project_src: data.videoProjectSrc,
       video_project_poster: data.videoProjectPosterUrl,
       video_vimeo_url: data.videoVimeoUrl,
@@ -115,11 +117,17 @@ export const useWorkCreateHandlers = (workData, setWorkData, setTempImagesOrder,
     }
     
     
-    // 7. Project video source
-    if (!data.videoProjectSrc || !data.videoProjectSrc.trim()) {
+    // 7. At least one video source required
+    const hasVideoSource = 
+      (data.videoProjectSrc && data.videoProjectSrc.trim()) ||
+      (data.videoVimeoUrl && data.videoVimeoUrl.trim()) ||
+      (data.videoYoutubeUrl && data.videoYoutubeUrl.trim()) ||
+      (data.videoCloudflareUrl && data.videoCloudflareUrl.trim());
+
+    if (!hasVideoSource) {
       errors.push({
-        field: 'videoProjectSrc',
-        message: 'Project video is required',
+        field: 'videoSources',
+        message: 'At least one video source is required (Media Gallery, Vimeo, YouTube, or Cloudflare)',
         priority: 7,
         scrollTarget: 'Video Project'
       });

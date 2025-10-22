@@ -96,7 +96,7 @@ const AddGalleryItemModal = ({
             {/* Full Width Section */}
             <div className="mb-5">
               <h4 className="text-sm font-medium text-gray-600 mb-2">Full Width</h4>
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-5 gap-3">
                 {IMAGE_TYPES.filter(type => type.category === "Full Width").map((type) => (
                   <button
                     key={type.value}
@@ -119,7 +119,7 @@ const AddGalleryItemModal = ({
             {/* Two Column Section */}
             <div className="mb-5">
               <h4 className="text-sm font-medium text-gray-600 mb-2">Two Column</h4>
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-5 gap-3">
                 {IMAGE_TYPES.filter(type => type.category === "Two Column").map((type) => (
                   <button
                     key={type.value}
@@ -142,7 +142,7 @@ const AddGalleryItemModal = ({
             {/* Before/After Comparison Section */}
             <div>
               <h4 className="text-sm font-medium text-gray-600 mb-2">Before/After Comparison</h4>
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-5 gap-3">
                 {IMAGE_TYPES.filter(type => type.category === "Before/After Comparison").map((type) => (
                   <button
                     key={type.value}

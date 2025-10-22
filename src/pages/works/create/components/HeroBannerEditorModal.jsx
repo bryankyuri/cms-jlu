@@ -109,7 +109,9 @@ const HeroBannerEditorModal = ({
                 style={{
                   backgroundImage: `url(${workData.heroBannerImage})`,
                   backgroundSize: "cover",
-                  backgroundPosition: `${backgroundPosX} ${backgroundPosY}`,
+                  backgroundPosition: selectedHeroBannerImage 
+                    ? `${workData.heroBannerPositionX || 'center'} ${workData.heroBannerPositionY || 'top'}`
+                    : `${backgroundPosX} ${backgroundPosY}`,
                   backgroundColor: "black",
                 }}
               >

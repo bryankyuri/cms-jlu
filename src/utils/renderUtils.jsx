@@ -23,30 +23,44 @@ const getGalleryTypeLabel = (type) => {
     case "2col-full":
       return "Two Column 16:9";
     case "2col-4:5":
-      return "Two Column 4:5";
+      return "Two Column 4:3";
+    case "2col-4:3":
+      return "Two Column 4:3";
     // New Full Width types
     case "full-16:9":
       return "Full Width 16:9";
+    case "full-1.85:1":
+      return "Full Width 1.85:1";
     case "full-2.35:1":
       return "Full Width 2.35:1";
     case "full-2.39:1":
       return "Full Width 2.39:1";
+    case "full-4:3":
+      return "Full Width 4:3";
     // New Two Column types
     case "2col-16:9":
       return "Two Column 16:9";
+    case "2col-1.85:1":
+      return "Two Column 1.85:1";
     case "2col-2.35:1":
       return "Two Column 2.35:1";
     case "2col-2.39:1":
       return "Two Column 2.39:1";
+    case "2col-4:3":
+      return "Two Column 4:3";
     // Before/After Comparison types
     case "compare-full":
       return "Before/After Comparison 16:9";
     case "compare-16:9":
       return "Before/After Comparison 16:9";
+    case "compare-1.85:1":
+      return "Before/After Comparison 1.85:1";
     case "compare-2.35:1":
       return "Before/After Comparison 2.35:1";
     case "compare-2.39:1":
       return "Before/After Comparison 2.39:1";
+    case "compare-4:3":
+      return "Before/After Comparison 4:3";
     default:
       return type;
   }
@@ -80,6 +94,17 @@ export const renderUtils = {
 						/>
 					</div>
 				);
+			case "full-1.85:1":
+				return (
+					<div className="w-full" style={{ aspectRatio: "1.85/1" }}>
+						<img
+							src={imageUrl}
+							alt={workData.title}
+							className="w-full h-full object-cover cursor-pointer hover:opacity-90 transition-opacity"
+							onClick={() => handleImageClick(imageUrl)}
+						/>
+					</div>
+				);
 			case "full-2.35:1":
 				return (
 					<div className="w-full" style={{ aspectRatio: "2.35/1" }}>
@@ -94,6 +119,17 @@ export const renderUtils = {
 			case "full-2.39:1":
 				return (
 					<div className="w-full" style={{ aspectRatio: "2.39/1" }}>
+						<img
+							src={imageUrl}
+							alt={workData.title}
+							className="w-full h-full object-cover cursor-pointer hover:opacity-90 transition-opacity"
+							onClick={() => handleImageClick(imageUrl)}
+						/>
+					</div>
+				);
+			case "full-4:3":
+				return (
+					<div className="w-full" style={{ aspectRatio: "4/3" }}>
 						<img
 							src={imageUrl}
 							alt={workData.title}
@@ -309,17 +345,148 @@ export const renderUtils = {
 						</div>
 					</div>
 				);
-			case "2col-4:5":
+			case "compare-1.85:1":
 				return (
-					<div className="grid grid-cols-2 lg:gap-5 gap-[10px]" style={{ aspectRatio: "8/5" }}>
-						{imageUrl.map((url, index) => (
-							<img
-								key={index}
-								src={url}
-								alt={workData.title}
-								className="w-full h-full object-cover cursor-pointer hover:opacity-90 transition-opacity"
-								onClick={() => handleImageClick(imageUrl, index)}
+					<div className="w-full relative">
+						<div className="sticky top-[62px] z-20 w-full bg-opacity-10 pt-4 px-4">
+							<div className="flex justify-between items-center">
+								{sliderPosition !== 0 && (
+									<button
+										onClick={() => !isAnimating && animateSlider(100)}
+										className="bg-black bg-opacity-70 text-white lg:px-3 px-2 py-1 lg:text-sm text-xs font-medium rounded transition-opacity duration-300"
+										disabled={isAnimating}
+									>
+										BEFORE
+									</button>
+								)}
+								{sliderPosition !== 100 && (
+									<button
+										onClick={() => !isAnimating && animateSlider(0)}
+										className="bg-black bg-opacity-70 text-white lg:px-3 px-2 py-1 lg:text-sm text-xs font-medium rounded transition-opacity duration-300"
+										disabled={isAnimating}
+									>
+										AFTER
+									</button>
+								)}
+							</div>
+						</div>
+
+						<div className="relative h-auto" style={{ aspectRatio: "1.85/1" }}>
+							<ReactCompareSlider
+								itemOne={
+									<ReactCompareSliderImage
+										src={imageUrl[0]}
+										alt={workData.title}
+										style={{
+											objectFit: "cover",
+											cursor: "pointer",
+										}}
+										onClick={() => handleImageClick(imageUrl, 0)}
+									/>
+								}
+								itemTwo={
+									<ReactCompareSliderImage
+										src={imageUrl[1]}
+										alt={workData.title}
+										style={{
+											objectFit: "cover",
+											cursor: "pointer",
+										}}
+										onClick={() => handleImageClick(imageUrl, 1)}
+									/>
+								}
+								position={sliderPosition}
+								className="w-full h-full"
+								boundsPadding={0}
 							/>
+						</div>
+					</div>
+				);
+			case "compare-4:3":
+				return (
+					<div className="w-full relative">
+						<div className="sticky top-[62px] z-20 w-full bg-opacity-10 pt-4 px-4">
+							<div className="flex justify-between items-center">
+								{sliderPosition !== 0 && (
+									<button
+										onClick={() => !isAnimating && animateSlider(100)}
+										className="bg-black bg-opacity-70 text-white lg:px-3 px-2 py-1 lg:text-sm text-xs font-medium rounded transition-opacity duration-300"
+										disabled={isAnimating}
+									>
+										BEFORE
+									</button>
+								)}
+								{sliderPosition !== 100 && (
+									<button
+										onClick={() => !isAnimating && animateSlider(0)}
+										className="bg-black bg-opacity-70 text-white lg:px-3 px-2 py-1 lg:text-sm text-xs font-medium rounded transition-opacity duration-300"
+										disabled={isAnimating}
+									>
+										AFTER
+									</button>
+								)}
+							</div>
+						</div>
+
+						<div className="relative h-auto" style={{ aspectRatio: "4/3" }}>
+							<ReactCompareSlider
+								itemOne={
+									<ReactCompareSliderImage
+										src={imageUrl[0]}
+										alt={workData.title}
+										style={{
+											objectFit: "cover",
+											cursor: "pointer",
+										}}
+										onClick={() => handleImageClick(imageUrl, 0)}
+									/>
+								}
+								itemTwo={
+									<ReactCompareSliderImage
+										src={imageUrl[1]}
+										alt={workData.title}
+										style={{
+											objectFit: "cover",
+											cursor: "pointer",
+										}}
+										onClick={() => handleImageClick(imageUrl, 1)}
+									/>
+								}
+								position={sliderPosition}
+								className="w-full h-full"
+								boundsPadding={0}
+							/>
+						</div>
+					</div>
+				);
+			case "2col-4:5":
+			case "2col-4:3":
+				return (
+					<div className="grid grid-cols-2 lg:gap-5 gap-[10px]">
+						{imageUrl.map((url, index) => (
+							<div key={index} style={{ aspectRatio: "4/3" }}>
+								<img
+									src={url}
+									alt={workData.title}
+									className="w-full h-full object-cover cursor-pointer hover:opacity-90 transition-opacity"
+									onClick={() => handleImageClick(imageUrl, index)}
+								/>
+							</div>
+						))}
+					</div>
+				);
+			case "2col-1.85:1":
+				return (
+					<div className="grid grid-cols-2 lg:gap-5 gap-[10px]">
+						{imageUrl.map((url, index) => (
+							<div key={index} style={{ aspectRatio: "1.85/1" }}>
+								<img
+									src={url}
+									alt={workData.title}
+									className="w-full h-full object-cover cursor-pointer hover:opacity-90 transition-opacity"
+									onClick={() => handleImageClick(imageUrl, index)}
+								/>
+							</div>
 						))}
 					</div>
 				);
