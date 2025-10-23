@@ -24,8 +24,6 @@ const getGalleryTypeLabel = (type) => {
       return "Two Column 16:9";
     case "2col-4:5":
       return "Two Column 4:3";
-    case "2col-4:3":
-      return "Two Column 4:3";
     // New Full Width types
     case "full-16:9":
       return "Full Width 16:9";

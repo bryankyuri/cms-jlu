@@ -231,12 +231,13 @@ export const useWorkCreate = () => {
     img.onload = () => {
       const imageAspectRatio = img.naturalWidth / img.naturalHeight;
       
-      // Check if image is 16:9 (1.777) or 4:3 (1.333)
-      const is16by9 = Math.abs(imageAspectRatio - (16/9)) < 0.01;
-      const is4by3 = Math.abs(imageAspectRatio - (4/3)) < 0.01;
+      // Check if image is 16:9 (1.777), 4:3 (1.333), or 1.85:1 (1.85)
+      const is16by9 = Math.abs(imageAspectRatio - (16/9)) < 0.01; // ~1.777
+      const is4by3 = Math.abs(imageAspectRatio - (4/3)) < 0.01; // ~1.333
+      const is185by1 = Math.abs(imageAspectRatio - (1.85/1)) < 0.01; // ~1.85
 
-      if (is16by9 || is4by3) {
-        // For 16:9 or 4:3, use the default behavior
+      if (is16by9 || is4by3 || is185by1) {
+        // For 16:9, 4:3, or 1.85:1, use the default behavior
         setHeroBannerFillMode(deviceType === "desktop" ? "100% auto" : "auto 100%");
       } else {
         // For other ratios, always use auto 100% to fill height

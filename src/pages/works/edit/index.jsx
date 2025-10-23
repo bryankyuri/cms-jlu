@@ -386,6 +386,7 @@ const WorkEdit = () => {
                   >
                     <option value="film/series">Film/Series</option>
                     <option value="commercial">Commercial</option>
+                    <option value="music video">Music Video</option>
                   </select>
                 </div>
               </div>
