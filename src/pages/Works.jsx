@@ -14,13 +14,16 @@ const Works = () => {
   const [statusFilter, setStatusFilter] = useState([]);
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [tagsFilter, setTagsFilter] = useState([]);
+  const [yearFilter, setYearFilter] = useState("all");
   const [sortBy, setSortBy] = useState("created_at");
   const [sortDirection, setSortDirection] = useState("desc");
   const [currentPage, setCurrentPage] = useState(1);
+  const [perPage, setPerPage] = useState(20);
   const [totalPages, setTotalPages] = useState(1);
   const [totalWorks, setTotalWorks] = useState(0);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [workToToggle, setWorkToToggle] = useState(null);
+  const [availableYears, setAvailableYears] = useState([]);
 
   const navigate = useNavigate();
 
@@ -32,7 +35,7 @@ const Works = () => {
 
       const params = {
         page: currentPage,
-        per_page: 12,
+        per_page: perPage,
       };
 
       // Only add parameters if they have actual values
@@ -52,6 +55,10 @@ const Works = () => {
         params.tags = tagsFilter;
       }
 
+      if (yearFilter !== "all") {
+        params.year = yearFilter;
+      }
+
       params.sort_by = sortBy;
       params.sort_direction = sortDirection;
 
@@ -61,6 +68,10 @@ const Works = () => {
       setTotalPages(response.meta?.last_page || 1);
       setTotalWorks(response.meta?.total || 0);
       setCurrentPage(response.meta?.current_page || 1);
+
+      // Extract unique years from works for filter
+      const years = [...new Set(response.data.map(work => work.year).filter(year => year))].sort((a, b) => b - a);
+      setAvailableYears(years);
     } catch (err) {
       console.error("Error fetching works:", err);
       setError(err.response?.data?.message || "Failed to fetch works");
@@ -75,10 +86,12 @@ const Works = () => {
     fetchWorks();
   }, [
     currentPage,
+    perPage,
     searchQuery,
     statusFilter,
     categoryFilter,
     tagsFilter,
+    yearFilter,
     sortBy,
     sortDirection,
   ]);
@@ -101,6 +114,7 @@ const Works = () => {
     setStatusFilter([]);
     setCategoryFilter("all");
     setTagsFilter([]);
+    setYearFilter("all");
     setCurrentPage(1);
   };
 
@@ -205,6 +219,21 @@ const Works = () => {
               <option value="all">All Categories</option>
               <option value="film/series">Film/Series</option>
               <option value="commercial">Commercial</option>
+              <option value="music video">Music Video</option>
+            </select>
+
+            {/* Year Filter */}
+            <select
+              value={yearFilter}
+              onChange={(e) => setYearFilter(e.target.value)}
+              className="px-3 py-[11px] border-b border-gray-300 focus:outline-none focus:border-black"
+            >
+              <option value="all">All Years</option>
+              {availableYears.map((year) => (
+                <option key={year} value={year}>
+                  {year}
+                </option>
+              ))}
             </select>
 
             {/* Tags Filter - Multiple Selection */}
@@ -243,11 +272,27 @@ const Works = () => {
               {sortDirection === "asc" ? "↑ Sort Ascending" : "↓ Sort Descending"}
             </button>
 
+            {/* Per Page Filter */}
+            <select
+              value={perPage}
+              onChange={(e) => {
+                setPerPage(Number(e.target.value));
+                setCurrentPage(1); // Reset to first page when changing per page
+              }}
+              className="px-3 py-[11px] border-b border-gray-300 focus:outline-none focus:border-black"
+            >
+              <option value={20}>20 per page</option>
+              <option value={30}>30 per page</option>
+              <option value={40}>40 per page</option>
+              <option value={50}>50 per page</option>
+            </select>
+
             {/* Clear filters */}
             {(searchQuery ||
               statusFilter.length > 0 ||
               categoryFilter !== "all" ||
-              tagsFilter.length > 0) && (
+              tagsFilter.length > 0 ||
+              yearFilter !== "all") && (
               <button
                 onClick={clearFilters}
                 className="px-3 py-[11px] bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200"
@@ -299,6 +344,7 @@ const Works = () => {
             {statusFilter.length > 0 && ` (Status: ${statusFilter.join(", ")})`}
             {categoryFilter !== "all" && ` (Category: ${categoryFilter})`}
             {tagsFilter.length > 0 && ` (Tags: ${tagsFilter.join(", ")})`}
+            {yearFilter !== "all" && ` (Year: ${yearFilter})`}
           </div>
 
           {/* Works Table */}
@@ -363,7 +409,11 @@ const Works = () => {
                           {work.client}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {work.category ? work.category === "film/series" ? "Film/Series" : "Commercial" : "-"}
+                          {work.category ? 
+                            work.category === "film/series" ? "Film/Series" : 
+                            work.category === "music video" ? "Music Video" :
+                            "Commercial" 
+                            : "-"}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           {work.year || "-"}
@@ -455,7 +505,8 @@ const Works = () => {
                 {searchQuery ||
                 statusFilter.length > 0 ||
                 categoryFilter !== "all" ||
-                tagsFilter.length > 0
+                tagsFilter.length > 0 ||
+                yearFilter !== "all"
                   ? "No works match your current filters. Try adjusting your search criteria."
                   : "You haven't created any works yet. Get started by creating your first work!"}
               </p>

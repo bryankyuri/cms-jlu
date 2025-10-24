@@ -1,10 +1,10 @@
 // Base API URL configuration
-const API_BASE_URL = process.env.NODE_ENV === 'production' 
+const API_BASE_URL = process.env.NODE_ENV !== 'production' 
   ? import.meta.env.VITE_REACT_APP_API_URL
   : 'http://127.0.0.1:8000/api';
 
 // Storage base URL for media files
-const STORAGE_BASE_URL = process.env.NODE_ENV === 'production' 
+const STORAGE_BASE_URL = process.env.NODE_ENV !== 'production' 
   ? import.meta.env.VITE_REACT_APP_STORAGE_URL
   : 'http://127.0.0.1:8000/storage';
 
@@ -289,6 +289,11 @@ export const mediaAPI = {
 
   // Get direct storage URL (faster for public files)
   getDirectUrl: (path) => {
+    // In production, use the storage URL from env
+    if (process.env.NODE_ENV !== 'production') {
+      return `${STORAGE_BASE_URL}/${path}`;
+    }
+    // In development, construct from API base URL
     const baseUrl = API_BASE_URL.replace('/api', '');
     return `${baseUrl}/storage/${path}`;
   }
