@@ -220,7 +220,7 @@ const ImageSelectionModal = ({ isOpen, onClose, onSelect, selectedImages = [], m
                     >
                       <img
                         src={image.url}
-                        alt={image.filename}
+                        alt={image.original_name || image.filename}
                         className="w-full h-full object-cover"
                       />
                       {isSelected && (
@@ -231,7 +231,7 @@ const ImageSelectionModal = ({ isOpen, onClose, onSelect, selectedImages = [], m
                         </div>
                       )}
                       <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-xs p-1 truncate">
-                        {image.filename}
+                        {image.original_name || image.filename}
                       </div>
                     </button>
                   );

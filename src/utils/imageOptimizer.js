@@ -12,25 +12,25 @@ const OPTIMIZATION_PRESETS = {
     maxWidth: 2560,
     maxHeight: 1440,
     quality: 0.92,
-    format: 'image/jpeg'
+    format: 'auto' // Auto-detect format based on original file
   },
   medium: {
     maxWidth: 1920,
     maxHeight: 1080,
     quality: 0.85,
-    format: 'image/jpeg'
+    format: 'auto' // Auto-detect format based on original file
   },
   low: {
     maxWidth: 1280,
     maxHeight: 720,
     quality: 0.75,
-    format: 'image/jpeg'
+    format: 'auto' // Auto-detect format based on original file
   },
   thumbnail: {
     maxWidth: 400,
     maxHeight: 300,
     quality: 0.8,
-    format: 'image/jpeg'
+    format: 'auto' // Auto-detect format based on original file
   }
 };
 
@@ -57,12 +57,26 @@ export const optimizeImage = (imageFile, options = {}) => {
     // Get preset configuration
     const preset = OPTIMIZATION_PRESETS[options.preset] || OPTIMIZATION_PRESETS.medium;
     
+    // Determine output format - use original format if 'auto' or not specified
+    let outputFormat = options.format || preset.format;
+    if (outputFormat === 'auto') {
+      // Preserve original format for PNG, WEBP, GIF
+      if (imageFile.type === 'image/png' || 
+          imageFile.type === 'image/webp' || 
+          imageFile.type === 'image/gif') {
+        outputFormat = imageFile.type;
+      } else {
+        // Default to JPEG for other formats (e.g., BMP, TIFF)
+        outputFormat = 'image/jpeg';
+      }
+    }
+    
     // Merge options with preset defaults
     const config = {
       maxWidth: options.maxWidth || preset.maxWidth,
       maxHeight: options.maxHeight || preset.maxHeight,
       quality: options.quality !== undefined ? options.quality : preset.quality,
-      format: options.format || preset.format,
+      format: outputFormat,
       maintainAspectRatio: options.maintainAspectRatio !== false
     };
 
@@ -112,12 +126,21 @@ export const optimizeImage = (imageFile, options = {}) => {
             return;
           }
 
-          // Generate optimized filename
+          // Generate optimized filename with preserved extension
           const originalName = imageFile.name;
           const nameWithoutExt = originalName.substring(0, originalName.lastIndexOf('.'));
-          const ext = config.format === 'image/jpeg' ? '.jpg' : 
-                     config.format === 'image/png' ? '.png' : 
-                     config.format === 'image/webp' ? '.webp' : '.jpg';
+          
+          // Determine file extension based on output format
+          let ext;
+          if (config.format === 'image/png') {
+            ext = '.png';
+          } else if (config.format === 'image/webp') {
+            ext = '.webp';
+          } else if (config.format === 'image/gif') {
+            ext = '.gif';
+          } else {
+            ext = '.jpg'; // Default to JPEG
+          }
           
           const optimizedFile = new File([blob], `${nameWithoutExt}${ext}`, {
             type: config.format,
