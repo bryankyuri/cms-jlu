@@ -1,7 +1,7 @@
 {
-  "name": "cms-parallel-studio",
+  "name": "jlu-cms",
   "version": "1.0.0",
-  "description": "Content Management System for Parallel Studio using React, Vite, React Query, Tailwind CSS, and SCSS modules.",
+  "description": "Content Management System for JLU using React, Vite, React Query, Tailwind CSS, and SCSS modules.",
   "main": "src/main.jsx",
   "scripts": {
     "dev": "vite",
@@ -13,13 +13,11 @@
     "@headlessui/react": "^2.2.3",
     "@studio-freight/lenis": "^1.0.42",
     "autoprefixer": "^10.4.14",
-    "chart.js": "^4.4.9",
     "framer-motion": "^12.7.3",
     "nprogress": "^0.2.0",
     "postcss": "^8.4.27",
     "react": "^18.2.0",
     "react-beautiful-dnd": "^13.1.1",
-    "react-chartjs-2": "^5.3.0",
     "react-compare-slider": "^3.1.0",
     "react-device-detect": "^2.2.3",
     "react-dnd": "^16.0.1",
@@ -30,8 +28,8 @@
     "react-icons": "^5.5.0",
     "react-intersection-observer": "^9.16.0",
     "react-query": "^3.39.3",
+    "react-quill": "^2.0.0",
     "react-router-dom": "^6.14.2",
-    "react-simple-maps": "^3.0.0",
     "react-toastify": "^11.0.5",
     "swiper": "^11.2.6",
     "tailwindcss": "^3.3.3"
@@ -43,10 +41,5 @@
   },
   "keywords": [],
   "author": "",
-  "license": "MIT",
-  "homepage": "",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/bryankyuri/parallelstudio.git"
-  }
+  "license": "MIT"
 }

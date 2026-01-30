@@ -2,10 +2,6 @@ import React from "react";
 import { createBrowserRouter } from "react-router-dom";
 import Layout from "../components/Layout";
 import Dashboard from "../pages/Dashboard";
-import Works from "../pages/Works";
-import WorkDetail from "../pages/works/detail/index";
-import WorkCreate from "../pages/works/create/index";
-import WorkEdit from "../pages/works/edit/index";
 import Login from "../pages/Login";
 import ForgotPassword from "../pages/ForgotPassword";
 import ResetPassword from "../pages/ResetPassword";
@@ -15,9 +11,12 @@ import { RouterProgress } from "../components/RouterProgress";
 import AuthLayout from "../components/AuthLayout";
 import GuestLayout from "../components/GuestLayout";
 import Media from "../pages/Media/index";
-import VideoBanner from "../pages/VideoBanner";
-import Showreel from "../pages/Showreel";
-import ContactSubmissions from "../pages/ContactSubmissions";
+import Projects from "../pages/Projects/index";
+import CreateProject from "../pages/Projects/create/index";
+import EditProject from "../pages/Projects/edit/index";
+import Products from "../pages/Products/index";
+import CreateProduct from "../pages/Products/create/index";
+import EditProduct from "../pages/Products/edit/index";
 
 export const router = createBrowserRouter([
   {
@@ -78,42 +77,38 @@ export const router = createBrowserRouter([
         loader: () => null,
       },
       {
-        path: "works",
-        element: <Works />,
-        loader: () => null,
-      },
-       {
-        path: "works/create",
-        element: <WorkCreate />,
-        loader: () => null,
-      },
-      {
-        path: "works/detail/:id",
-        element: <WorkDetail />,
-        loader: () => null,
-      },
-       {
-        path: "works/edit/:id",
-        element: <WorkEdit />,
-        loader: () => null,
-      },
-      {
         path: "media",
         element: <Media />,
         loader: () => null,
       },
       {
-        path: "video-banner",
-        element: <VideoBanner />,
-      },
-      {
-        path: "showreel",
-        element: <Showreel />,
+        path: "projects",
+        element: <Projects />,
         loader: () => null,
       },
       {
-        path: "contact-submissions",
-        element: <ContactSubmissions />,
+        path: "projects/create",
+        element: <CreateProject />,
+        loader: () => null,
+      },
+      {
+        path: "projects/:uuid/edit",
+        element: <EditProject />,
+        loader: () => null,
+      },
+      {
+        path: "products",
+        element: <Products />,
+        loader: () => null,
+      },
+      {
+        path: "products/create",
+        element: <CreateProduct />,
+        loader: () => null,
+      },
+      {
+        path: "products/:uuid/edit",
+        element: <EditProduct />,
         loader: () => null,
       },
       {

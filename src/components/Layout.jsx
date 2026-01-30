@@ -10,9 +10,9 @@ import Breadcrumb from "./Breadcrumb";
 const Layout = () => {
   const { deviceType } = useContext(AppContext);
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col bg-white">
       <Navigation deviceType={deviceType} />
-      <main className="flex-1 mt-[66px] lg:mt-[62px]">
+      <main className="flex-1 mt-[50px]">
         <Breadcrumb />
         <PageTransition>
           <Outlet />

@@ -1,11 +1,11 @@
 // Base API URL configuration
 const API_BASE_URL = process.env.NODE_ENV !== 'production' 
-  ? import.meta.env.VITE_REACT_APP_API_URL
+  ? 'http://127.0.0.1:8000/api'
   : 'http://127.0.0.1:8000/api';
 
 // Storage base URL for media files
 const STORAGE_BASE_URL = process.env.NODE_ENV !== 'production' 
-  ? import.meta.env.VITE_REACT_APP_STORAGE_URL
+  ? 'http://127.0.0.1:8000/storage'
   : 'http://127.0.0.1:8000/storage';
 
 // Convert API returned URLs to use correct base URL
@@ -82,11 +82,22 @@ const apiRequest = async (endpoint, options = {}) => {
     const data = await response.json();
 
     if (!response.ok) {
-      // Handle unauthorized responses
-      if (response.status === 401) {
+      // Handle unauthorized responses (but not for login endpoint)
+      if (response.status === 401 && !endpoint.includes('/auth/login')) {
+        // Clear invalid token
         removeAuthToken();
-        window.location.href = '/login';
-        return;
+        
+        // Show notification if toast is available
+        if (window.showToast) {
+          window.showToast('Session expired. Please log in again.', 'error');
+        }
+        
+        // Redirect to login after a short delay
+        setTimeout(() => {
+          window.location.href = '/login';
+        }, 1000);
+        
+        throw new Error('Unauthorized - Token expired');
       }
       throw new Error(data.message || 'API request failed');
     }
@@ -384,6 +395,14 @@ export const worksAPI = {
       method: 'POST',
       body: JSON.stringify(publishData),
     });
+  },
+
+  // Reorder works
+  reorder: async (worksData) => {
+    return await apiRequest('/works/reorder', {
+      method: 'POST',
+      body: JSON.stringify(worksData),
+    });
   }
 };
 
@@ -626,4 +645,337 @@ export const contactSubmissionsApi = {
       throw error;
     }
   },
+};
+
+// FAQ API
+export const faqAPI = {
+  // Get all FAQs with filters
+  getAll: async (params = {}) => {
+    try {
+      const searchParams = new URLSearchParams();
+      
+      // Add all filter parameters
+      Object.keys(params).forEach(key => {
+        if (params[key] !== null && params[key] !== undefined && params[key] !== '') {
+          searchParams.append(key, params[key]);
+        }
+      });
+
+      const token = getAuthToken();
+      const response = await fetch(`${API_BASE_URL}/faqs?${searchParams}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching FAQs:', error);
+      throw error;
+    }
+  },
+
+  // Get single FAQ
+  getById: async (id) => {
+    try {
+      const token = getAuthToken();
+      const response = await fetch(`${API_BASE_URL}/faqs/${id}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching FAQ:', error);
+      throw error;
+    }
+  },
+
+  // Create new FAQ
+  create: async (faqData) => {
+    try {
+      const token = getAuthToken();
+      const response = await fetch(`${API_BASE_URL}/faqs`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify(faqData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error creating FAQ:', error);
+      throw error;
+    }
+  },
+
+  // Update FAQ
+  update: async (id, faqData) => {
+    try {
+      const token = getAuthToken();
+      const response = await fetch(`${API_BASE_URL}/faqs/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify(faqData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error updating FAQ:', error);
+      throw error;
+    }
+  },
+
+  // Delete FAQ
+  delete: async (id) => {
+    try {
+      const token = getAuthToken();
+      const response = await fetch(`${API_BASE_URL}/faqs/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error deleting FAQ:', error);
+      throw error;
+    }
+  },
+
+  // Reorder FAQs
+  reorder: async (faqsData) => {
+    try {
+      const token = getAuthToken();
+      const response = await fetch(`${API_BASE_URL}/faqs/reorder`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify(faqsData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error reordering FAQs:', error);
+      throw error;
+    }
+  },
+};
+
+// FAQ Groups API
+export const faqGroupAPI = {
+  // Get all FAQ groups with filters
+  getAll: async (params = {}) => {
+    try {
+      const searchParams = new URLSearchParams();
+      
+      // Add all filter parameters
+      Object.keys(params).forEach(key => {
+        if (params[key] !== null && params[key] !== undefined && params[key] !== '') {
+          searchParams.append(key, params[key]);
+        }
+      });
+
+      const token = getAuthToken();
+      const response = await fetch(`${API_BASE_URL}/faq-groups?${searchParams}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      return result.data || [];
+    } catch (error) {
+      console.error('Error fetching FAQ groups:', error);
+      throw error;
+    }
+  },
+
+  // Get single FAQ group
+  getById: async (id) => {
+    try {
+      const token = getAuthToken();
+      const response = await fetch(`${API_BASE_URL}/faq-groups/${id}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      return result.data;
+    } catch (error) {
+      console.error('Error fetching FAQ group:', error);
+      throw error;
+    }
+  },
+
+  // Create new FAQ group
+  create: async (groupData) => {
+    try {
+      const token = getAuthToken();
+      const response = await fetch(`${API_BASE_URL}/faq-groups`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify(groupData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error creating FAQ group:', error);
+      throw error;
+    }
+  },
+
+  // Update FAQ group
+  update: async (id, groupData) => {
+    try {
+      const token = getAuthToken();
+      const response = await fetch(`${API_BASE_URL}/faq-groups/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify(groupData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error updating FAQ group:', error);
+      throw error;
+    }
+  },
+
+  // Delete FAQ group
+  delete: async (id) => {
+    try {
+      const token = getAuthToken();
+      const response = await fetch(`${API_BASE_URL}/faq-groups/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        // Return the error message from backend for deletion validation
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error deleting FAQ group:', error);
+      throw error;
+    }
+  },
+
+  // Reorder FAQ groups
+  reorder: async (groupsData) => {
+    try {
+      const token = getAuthToken();
+      const response = await fetch(`${API_BASE_URL}/faq-groups/reorder`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify(groupsData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error reordering FAQ groups:', error);
+      throw error;
+    }
+  },
+};
+
+// Helper function to get media files (for backward compatibility)
+export const getMediaFiles = async (params = {}) => {
+  return await mediaAPI.getAll(params);
 };

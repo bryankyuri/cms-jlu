@@ -163,7 +163,7 @@ const Media = () => {
   };
 
   return (
-    <div className="media-library px-5 py-8">
+    <div className="media-library w-full max-w-[1920px] mx-auto px-5 py-8">
       {/* Header */}
       <div className="flex justify-center items-center mb-6">
         <h1 className="lg:text-[40px] text-[36px] text-black font-bold lg:mb-[60px] text-center">
@@ -186,34 +186,7 @@ const Media = () => {
                 />
               </div>
 
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="px-4 py-2 border-b border-gray-300 focus:outline-none"
-              >
-                <option value="created_at">Date Created</option>
-                <option value="original_name">Name</option>
-                <option value="size">Size</option>
-              </select>
-
-              <select
-                value={sortDirection}
-                onChange={(e) => setSortDirection(e.target.value)}
-                className="px-4 py-2 border-b border-gray-300 focus:outline-none"
-              >
-                <option value="desc">Descending</option>
-                <option value="asc">Ascending</option>
-              </select>
-
-              <select
-                value={perPage}
-                onChange={(e) => handlePerPageChange(Number(e.target.value))}
-                className="px-4 py-2 border-b border-gray-300 focus:outline-none"
-              >
-                <option value={10}>10 per page</option>
-                <option value={20}>20 per page</option>
-                <option value={50}>50 per page</option>
-              </select>
+              {/* Filters hidden for simplified image-only library */}
             </div>
 
             <div className="flex items-center gap-2">
@@ -238,56 +211,18 @@ const Media = () => {
                 <FiList size={18} />
               </button>
               <div className="flex w-[450px] justify-end gap-8">
-                <div className="relative" ref={dropdownRef}>
-                  <button 
-                    onClick={toggleUploadDropdown}
-                    className="bg-black text-white px-4 py-2 rounded flex items-center gap-2"
-                  >
-                    <FiUpload size={18} />
-                    Upload
-                    <FiChevronDown size={16} className={`transition-transform ${isUploadDropdownOpen ? 'rotate-180' : ''}`} />
-                  </button>
-                  
-                  {isUploadDropdownOpen && (
-                    <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-10">
-                      <button
-                        onClick={handleImageUploadClick}
-                        className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100 flex items-center gap-2"
-                      >
-                        <FiImage size={16} />
-                        Images
-                      </button>
-                      <button
-                        onClick={handleVideoUploadClick}
-                        className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100 flex items-center gap-2 border-t border-gray-100"
-                      >
-                        <FiVideo size={16} />
-                        Videos
-                      </button>
-                    </div>
-                  )}
-                </div>
+                <button 
+                  onClick={handleImageUploadClick}
+                  className="bg-black text-white px-4 py-2 rounded flex items-center gap-2"
+                >
+                  <FiUpload size={18} />
+                  Upload Image
+                </button>
               </div>
             </div>
           </div>
           <div className="flex w-full justify-between mb-6">
-            <Tab.List className="lg:max-w-[300px] w-full flex  items-center space-x-2 rounded-xl p-1">
-              {["All", "Images", "Videos"].map((category) => (
-                <Tab
-                  key={category}
-                  className={({ selected }) =>
-                    `w-full rounded py-2.5 text-sm font-medium leading-5 
-                ${
-                  selected
-                    ? "bg-black shadow text-white"
-                    : "bg-[#F0F0F0] text-[#787878] hover:bg-gray-300"
-                }`
-                  }
-                >
-                  {category}
-                </Tab>
-              ))}
-            </Tab.List>
+            {/* Tabs hidden - showing images only */}
             {pagination.total && (
               <div className="w-full flex justify-center items-center text-sm text-gray-600">
                 Showing {(currentPage - 1) * perPage + 1} -{" "}

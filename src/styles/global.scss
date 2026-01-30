@@ -270,3 +270,83 @@ button {
 .animate-slideUpFromBottom {
   animation: slideUpFromBottom 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
+
+// WYSIWYG Editor Styles
+.wysiwyg-editor .ql-container {
+  min-height: 200px;
+  font-size: 14px;
+}
+
+.wysiwyg-editor .ql-editor {
+  min-height: 200px;
+}
+
+.wysiwyg-editor .ql-editor.ql-blank::before {
+  color: #9ca3af;
+  font-style: normal;
+}
+
+// Prose styles for rendered FAQ content
+.prose {
+  h1, h2, h3 {
+    font-weight: 600 !important;
+    margin-top: 1em !important;
+    margin-bottom: 0.5em !important;
+    color: #111827 !important;
+  }
+  
+  h1 { font-size: 1.5em !important; }
+  h2 { font-size: 1.25em !important; }
+  h3 { font-size: 1.125em !important; }
+  
+  p {
+    margin-bottom: 0.75em !important;
+    line-height: 1.625 !important;
+    color: inherit !important;
+  }
+  
+  ul, ol {
+    margin-top: 0.5em !important;
+    margin-bottom: 0.75em !important;
+    padding-left: 1.5em !important;
+    list-style-position: outside !important;
+  }
+  
+  ul {
+    list-style-type: disc !important;
+  }
+  
+  ol {
+    list-style-type: decimal !important;
+  }
+  
+  li {
+    margin-bottom: 0.25em !important;
+    display: list-item !important;
+  }
+  
+  strong {
+    font-weight: 600 !important;
+    color: #111827 !important;
+  }
+  
+  em {
+    font-style: italic !important;
+  }
+  
+  a {
+    color: #2563eb !important;
+    text-decoration: underline !important;
+    
+    &:hover {
+      color: #1d4ed8 !important;
+    }
+  }
+  
+  code {
+    background-color: #f3f4f6 !important;
+    padding: 0.125rem 0.25rem !important;
+    border-radius: 0.25rem !important;
+    font-size: 0.875em !important;
+  }
+}

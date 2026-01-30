@@ -3,94 +3,62 @@ import { Link } from "react-router-dom";
 
 const Footer = ({ deviceType }) => {
   return (
-    <footer className="px-5">
-      {/* <div className="w-full mx-auto lg:pt-5 lg:border-t lg:border-black flex lg:flex-row flex-col items-start justify-between text-black">
-        <div className="w-full">
-          <img
-            className=" invert"
-            src="/logo.png"
-            alt="Logo"
-            width={"198px"}
-            height={"auto"}
-          />
-        </div>
-        <div className="w-full">
-          <div className="font-semibold mb-10 lg:mt-0 mt-10">OFFICE</div>
-          <div className="mb-10 uppercase">
-            Jl. Damai II No.2G
-            <br />
-            Cipete Utara, KEBAYORAN Baru,
-            <br />
-            Jakarta Selatan 12150
-            <br />
-            INDONESIA
-            <br />
-          </div>
-          <div className="flex">
-            <div className="mr-[87px]">P</div>
-            <div>
-              <span className="mr-6">+62</span>
-              <span>812 8626 3544</span>
-            </div>
-          </div>
-          <div className="flex">
-            <div className="mr-[83px]">M</div>
-            <div>
-              <span>INFO@PARALLEL.ASIA</span>
-            </div>
-          </div>
-        </div>
-        <div className="w-full">
-          <div className="font-semibold mb-10 lg:mt-0 mt-10">SOCIAL</div>
-          <div className="flex flex-col">
-            <a
-              href="https://www.instagram.com/parallel__studio//"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="lg:border-none border-t border-black lg:py-0 py-2"
-            >
-              INSTAGRAM
-            </a>
-            <a
-              href="https://www.youtube.com/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="lg:border-none border-t border-black lg:py-0 py-2"
-            >
-              YOUTUBE
-            </a>
-            <a
-              href="https://www.vimeo.com/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="lg:border-none border-t border-black lg:py-0 py-2"
-            >
-              VIMEO
-            </a>
-          </div>
-        </div>
-        <div className="w-[70%] text-right">
-          <div className="font-semibold mb-10"></div>
-        </div>
-      </div> */}
+    <footer className="bg-[#242021] text-white">
       {deviceType === "desktop" ? (
-        <div className="w-full flex justify-between py-5 text-[10px] font-semibold text-black mt-[24px]">
-          <div className="w-full">©2024</div>
-          <div className="w-full">SITE BY PLAYGROUND STUDIO</div>
+        <div className="w-full max-w-[1920px] mx-auto flex justify-between items-end pb-[30px] pt-4 border-t border-[#EBE8E133] px-[24px]">
+          <div className="flex flex-col w-full">
+            <img
+              src="/logoIcon.png"
+              className="w-[24px] h-[24px] mb-[59px]"
+              alt="JLU Icon"
+            />
+            <div className="text-[#EBE8E180] font-medium text-[12px]">
+              © 2025 Jakarta Lubrication Unit. All rights reserved.
+            </div>
+          </div>
+          <div className="w-full flex justify-center">
+            <div className="flex flex-wrap justify-center gap-x-4 gap-y-4 mb-[59px] max-w-[323px]">
+              <Link
+                to="/"
+                className="text-white text-[12px] font-medium"
+              >
+                Dashboard
+              </Link>
+              <Link
+                to="/media"
+                className="text-white text-[12px] font-medium"
+              >
+                Media Library
+              </Link>
+              <Link
+                to="/projects"
+                className="text-white text-[12px] font-medium"
+              >
+                Projects
+              </Link>
+              <Link
+                to="/products"
+                className="text-white text-[12px] font-medium"
+              >
+                Products
+              </Link>
+            </div>
+          </div>
           <div className="w-full"></div>
-          <div className="w-[70%] text-right">THE HAGUE, THE NETHERLANDS</div>
         </div>
       ) : (
-        <div className="w-full flex justify-between py-5 text-[10px] font-semibold text-black mt-[227px]">
+        <div className="w-full max-w-[1920px] mx-auto flex justify-between py-5 text-[10px] font-semibold border-t border-[#EBE8E133] px-[24px]">
           <div className="text-left">
-            ©2024
-            <br />
-            SITE BY PLAYGROUND STUDIO
-          </div>
-          <div className="text-right">
-            THE HAGUE,
-            <br />
-            THE NETHERLANDS
+            <img
+              src="/logoIcon.png"
+              className="w-[20px] h-[20px] mb-2"
+              alt="JLU Icon"
+            />
+            <div className="text-[#EBE8E180]">
+              © 2025 Jakarta Lubrication Unit.
+              <br />
+              All rights reserved.
+            </div>
           </div>
         </div>
       )}
