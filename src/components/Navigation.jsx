@@ -61,6 +61,14 @@ const Navigation = ({ deviceType }) => {
               >
                 Products
               </NavLink>
+              <NavLink
+                to="/services"
+                className={({ isActive }) =>
+                  isActive ? "" : "hover:font-medium"
+                }
+              >
+                Services
+              </NavLink>
             </div>
           </nav>
         </header>
@@ -145,6 +153,15 @@ const Navigation = ({ deviceType }) => {
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Products
+              </NavLink>
+              <NavLink
+                to="/services"
+                className={({ isActive }) =>
+                  `block py-3 border-b border-[#EBE8E133] ${isActive ? "" : ""}`
+                }
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Services
               </NavLink>
             </div>
           </div>

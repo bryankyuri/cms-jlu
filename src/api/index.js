@@ -979,3 +979,329 @@ export const faqGroupAPI = {
 export const getMediaFiles = async (params = {}) => {
   return await mediaAPI.getAll(params);
 };
+
+// Service Groups API
+export const serviceGroupAPI = {
+  // Get all service groups with filters
+  getAll: async (params = {}) => {
+    try {
+      const searchParams = new URLSearchParams();
+      
+      Object.keys(params).forEach(key => {
+        if (params[key] !== null && params[key] !== undefined && params[key] !== '') {
+          searchParams.append(key, params[key]);
+        }
+      });
+
+      const token = getAuthToken();
+      const response = await fetch(`${API_BASE_URL}/service-groups?${searchParams}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      return result.data || [];
+    } catch (error) {
+      console.error('Error fetching service groups:', error);
+      throw error;
+    }
+  },
+
+  // Get single service group
+  getById: async (id) => {
+    try {
+      const token = getAuthToken();
+      const response = await fetch(`${API_BASE_URL}/service-groups/${id}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      return result.data;
+    } catch (error) {
+      console.error('Error fetching service group:', error);
+      throw error;
+    }
+  },
+
+  // Create new service group
+  create: async (groupData) => {
+    try {
+      const token = getAuthToken();
+      const response = await fetch(`${API_BASE_URL}/service-groups`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify(groupData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error creating service group:', error);
+      throw error;
+    }
+  },
+
+  // Update service group
+  update: async (id, groupData) => {
+    try {
+      const token = getAuthToken();
+      const response = await fetch(`${API_BASE_URL}/service-groups/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify(groupData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error updating service group:', error);
+      throw error;
+    }
+  },
+
+  // Delete service group
+  delete: async (id) => {
+    try {
+      const token = getAuthToken();
+      const response = await fetch(`${API_BASE_URL}/service-groups/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error deleting service group:', error);
+      throw error;
+    }
+  },
+
+  // Reorder service groups
+  reorder: async (groupsData) => {
+    try {
+      const token = getAuthToken();
+      const response = await fetch(`${API_BASE_URL}/service-groups/reorder`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify(groupsData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error reordering service groups:', error);
+      throw error;
+    }
+  },
+};
+
+// Service Items API
+export const serviceItemAPI = {
+  // Get all service items with filters
+  getAll: async (params = {}) => {
+    try {
+      const searchParams = new URLSearchParams();
+      
+      Object.keys(params).forEach(key => {
+        if (params[key] !== null && params[key] !== undefined && params[key] !== '') {
+          searchParams.append(key, params[key]);
+        }
+      });
+
+      const token = getAuthToken();
+      const response = await fetch(`${API_BASE_URL}/service-items?${searchParams}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching service items:', error);
+      throw error;
+    }
+  },
+
+  // Get single service item
+  getById: async (id) => {
+    try {
+      const token = getAuthToken();
+      const response = await fetch(`${API_BASE_URL}/service-items/${id}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      return result.data;
+    } catch (error) {
+      console.error('Error fetching service item:', error);
+      throw error;
+    }
+  },
+
+  // Create new service item
+  create: async (itemData) => {
+    try {
+      const token = getAuthToken();
+      const response = await fetch(`${API_BASE_URL}/service-items`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify(itemData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error creating service item:', error);
+      throw error;
+    }
+  },
+
+  // Update service item
+  update: async (id, itemData) => {
+    try {
+      const token = getAuthToken();
+      const response = await fetch(`${API_BASE_URL}/service-items/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify(itemData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error updating service item:', error);
+      throw error;
+    }
+  },
+
+  // Delete service item
+  delete: async (id) => {
+    try {
+      const token = getAuthToken();
+      const response = await fetch(`${API_BASE_URL}/service-items/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error deleting service item:', error);
+      throw error;
+    }
+  },
+
+  // Reorder service items
+  reorder: async (itemsData) => {
+    try {
+      const token = getAuthToken();
+      const response = await fetch(`${API_BASE_URL}/service-items/reorder`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify(itemsData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error reordering service items:', error);
+      throw error;
+    }
+  },
+};

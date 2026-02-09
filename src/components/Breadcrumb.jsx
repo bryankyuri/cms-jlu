@@ -26,7 +26,7 @@ const Breadcrumb = () => {
   ];
 
   return (
-    <nav className="px-4 py-2 lg:px-6" aria-label="Breadcrumb">
+    <nav className="px-4 py-2 lg:px-6 max-w-[1920px] mx-auto" aria-label="Breadcrumb">
       <ol className="flex flex-wrap items-center text-[12px]">
         {breadcrumbItems.map((item, index) => (
           <React.Fragment key={item.path}>

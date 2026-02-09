@@ -19,6 +19,7 @@ const CreateProduct = () => {
   const [formData, setFormData] = useState({
     name: '',
     category: '',
+    highlight_description: '',
     detail_specs: '',
     tags: [],
     status: 'draft',
@@ -216,6 +217,25 @@ const CreateProduct = () => {
                   Selected: {formData.tags.join(', ')}
                 </p>
               )}
+            </div>
+
+            {/* Highlight Description */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Highlight Description
+              </label>
+              <textarea
+                name="highlight_description"
+                value={formData.highlight_description}
+                onChange={handleChange}
+                placeholder="Short description shown on home page..."
+                rows={3}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+                disabled={isSaving}
+              />
+              <p className="mt-1 text-xs text-gray-500">
+                This description will be displayed on the home page. Leave empty to use detail specs.
+              </p>
             </div>
 
             {/* Detail Specs (WYSIWYG) */}

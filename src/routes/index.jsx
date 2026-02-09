@@ -17,6 +17,7 @@ import EditProject from "../pages/Projects/edit/index";
 import Products from "../pages/Products/index";
 import CreateProduct from "../pages/Products/create/index";
 import EditProduct from "../pages/Products/edit/index";
+import Services from "../pages/Services/index";
 
 export const router = createBrowserRouter([
   {
@@ -109,6 +110,11 @@ export const router = createBrowserRouter([
       {
         path: "products/:uuid/edit",
         element: <EditProduct />,
+        loader: () => null,
+      },
+      {
+        path: "services",
+        element: <Services />,
         loader: () => null,
       },
       {

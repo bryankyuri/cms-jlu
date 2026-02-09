@@ -147,7 +147,7 @@ const Products = () => {
     try {
       const productsData = reorderProductsList.map((product, index) => ({
         id: product.id,
-        display_order: reorderProductsList.length - index,
+        display_order: index + 1,
       }));
 
       const response = await reorderProducts(productsData);

@@ -18,7 +18,6 @@ const Layout = () => {
           <Outlet />
         </PageTransition>
       </main>
-      <Footer deviceType={deviceType} />
       {/* <ThemeToggle /> */}
     </div>
   );
